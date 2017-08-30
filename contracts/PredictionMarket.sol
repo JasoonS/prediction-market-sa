@@ -15,6 +15,7 @@ contract PredictionMarket {
         uint against;
         uint timeOfBetClose;
         uint resolutionDeadlineTime;
+        // TODO: add a `winningsClaimDeadline` variable, use with `withdrawRemaining` and create modifiers for relevant functions.
         address trustedSource;
         bool exists;
         Result result;
@@ -100,6 +101,7 @@ contract PredictionMarket {
     }
 
     function createPosition (bytes32 questionId, uint[2] initialPosition)
+        external
         payable
         betStillOpen(questionId)
         returns (bool)
@@ -117,16 +119,18 @@ contract PredictionMarket {
         questions[questionId].positions[msg.sender].against += initialPosition[1];
     }
     
-    function getPosition (bytes32 questionId)
-        public
+    function getPosition (bytes32 questionId, address user)
+        external
+        constant
         returns (uint inFavour, uint against)
     {
-        inFavour = questions[questionId].positions[msg.sender].inFavour;
-        against = questions[questionId].positions[msg.sender].against;
+        inFavour = questions[questionId].positions[user].inFavour;
+        against = questions[questionId].positions[user].against;
     }
     
     function getBetOdds (bytes32 questionId)
-        public
+        external
+        constant
         returns (uint inFavour, uint against)
     {
         inFavour = questions[questionId].inFavour;
@@ -134,6 +138,7 @@ contract PredictionMarket {
     }
     
     function closeBet (bytes32 questionId, bool result)
+        external
         isBetResolvePeriod(questionId)
         betIsUnresolved(questionId)
         returns(bool)
@@ -144,7 +149,8 @@ contract PredictionMarket {
         return true;
     }
     
-    function calCalculatePayout(bytes32 questionId, address user) 
+    function calCalculatePayout(bytes32 questionId, address user)
+        public
         constant
         betIsResolved(questionId)
         returns (uint)
@@ -180,4 +186,7 @@ contract PredictionMarket {
         // TODO:: Safe math! The `*` is particularly prone to overflow. Find way to mitigate this.
         return scalor + ((scalor * numerator) / denominator);
     }
+    
+    // TODO: add `claimWinnings` function
+    // TODO: add a `withdrawRemaining` function that can only be called once the withdraw period is over.
 }
