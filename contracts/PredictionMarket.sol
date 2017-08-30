@@ -83,4 +83,21 @@ contract PredictionMarket {
         questions[questionId].positions[msg.sender].inFavour += initialPosition[0];
         questions[questionId].positions[msg.sender].against += initialPosition[1];
     }
+    
+    // Other option is to make `Position` type into uint[2] type and then no need for this getter
+    function getPosition (bytes32 questionId)
+        public
+        returns (uint inFavour, uint against)
+    {
+        inFavour = questions[questionId].positions[msg.sender].inFavour;
+        against = questions[questionId].positions[msg.sender].against;
+    }
+    
+    function getBetOdds (bytes32 questionId)
+        public
+        returns (uint inFavour, uint against)
+    {
+        inFavour = questions[questionId].inFavour;
+        against = questions[questionId].against;
+    }
 }
