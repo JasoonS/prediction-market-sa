@@ -3,6 +3,8 @@ pragma solidity ^0.4.16;
 contract PredictionMarket {
     address public admin;
     mapping (bytes32 => Question) questions;
+    
+    //Todo - use safemath
 
     struct Question {
         string questionStatement;
@@ -16,7 +18,7 @@ contract PredictionMarket {
     }
     
     struct Position {
-        uint isFavour;
+        uint inFavour;
         uint against;
     }
 
@@ -25,10 +27,10 @@ contract PredictionMarket {
         _;
     }
     
-    // modifier isAdmin() {
-    //     require(msg.sender == admin);
-    //     _;
-    // }
+    modifier betStillOpen(bytes32 questionId) {
+        require(block.timestamp < questions[questionId].timeOfBetClose);
+        _;
+    }
 
     function PredictionMarket() {
       admin = msg.sender;
@@ -51,7 +53,7 @@ contract PredictionMarket {
 
         require(!questions[questionId].exists);
         
-        uint initialQuestionValue = initialPosition[0] + initialPosition[0];
+        uint initialQuestionValue = initialPosition[0] + initialPosition[1];
         require(msg.value >= initialQuestionValue);
         if (msg.value > initialQuestionValue) {
             msg.sender.transfer(msg.value - initialQuestionValue);
@@ -62,5 +64,23 @@ contract PredictionMarket {
         questions[questionId].timeOfBetClose = timeOfBetClose;
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].trustedSource = trusteSsorce;
+    }
+    
+    function createPosition (bytes32 questionId, uint[2] initialPosition)
+        payable
+        betStillOpen(questionId)
+        returns (bool)
+    {
+        uint initialQuestionValue = initialPosition[0] + initialPosition[1];
+        require(msg.value >= initialQuestionValue);
+        if (msg.value > initialQuestionValue) {
+            msg.sender.transfer(msg.value - initialQuestionValue);
+        }
+        
+        questions[questionId].inFavour += initialPosition[0];
+        questions[questionId].against += initialPosition[1];
+        
+        questions[questionId].positions[msg.sender].inFavour += initialPosition[0];
+        questions[questionId].positions[msg.sender].against += initialPosition[1];
     }
 }
