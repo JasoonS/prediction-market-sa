@@ -1,9 +1,11 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.15;
 
 contract PredictionMarket {
     address public admin;
     mapping (bytes32 => Question) questions;
-    
+
+    event QuestionAddedEvent(string question, uint inFavour, uint against);
+
     //Todo - use safemath
 
     struct Question {
@@ -84,6 +86,8 @@ contract PredictionMarket {
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].trustedSource = trusteSsorce;
         
+        QuestionAddedEvent(questionStatement, initialPosition[0], initialPosition[1]);
+
         return questionId;
     }
 
