@@ -15,11 +15,18 @@ contract PredictionMarket {
         uint resolutionDeadlineTime;
         address trustedSource;
         bool exists;
+        Result result;
     }
     
     struct Position {
         uint inFavour;
         uint against;
+    }
+    
+    struct Result {
+        bool created;
+        uint[2] finalOdds;
+        bool result;
     }
 
     modifier isAdmin() {
@@ -27,8 +34,19 @@ contract PredictionMarket {
         _;
     }
     
+    modifier betIsUnresolved(bytes32 questionId) {
+        require(block.timestamp < questions[questionId].timeOfBetClose);
+        _;
+    }
+    
     modifier betStillOpen(bytes32 questionId) {
         require(block.timestamp < questions[questionId].timeOfBetClose);
+        _;
+    }
+    
+    modifier isBetResolvePeriod(bytes32 questionId) {
+        require(block.timestamp > questions[questionId].timeOfBetClose);
+        require(block.timestamp < questions[questionId].resolutionDeadlineTime);
         _;
     }
 
@@ -46,6 +64,7 @@ contract PredictionMarket {
         external
         payable
         isAdmin
+        returns(bytes32)
     {   
         require(timeOfBetClose < resolutionDeadlineTime);
         
@@ -64,8 +83,10 @@ contract PredictionMarket {
         questions[questionId].timeOfBetClose = timeOfBetClose;
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].trustedSource = trusteSsorce;
+        
+        return questionId;
     }
-    
+
     function createPosition (bytes32 questionId, uint[2] initialPosition)
         payable
         betStillOpen(questionId)
@@ -84,7 +105,6 @@ contract PredictionMarket {
         questions[questionId].positions[msg.sender].against += initialPosition[1];
     }
     
-    // Other option is to make `Position` type into uint[2] type and then no need for this getter
     function getPosition (bytes32 questionId)
         public
         returns (uint inFavour, uint against)
@@ -99,5 +119,16 @@ contract PredictionMarket {
     {
         inFavour = questions[questionId].inFavour;
         against = questions[questionId].against;
+    }
+    
+    function closeBet (bytes32 questionId, bool result)
+        isBetResolvePeriod(questionId)
+        betIsUnresolved(questionId)
+        returns(bool)
+    {
+        questions[questionId].result.created = true;
+        questions[questionId].result.result = result;
+        questions[questionId].result.finalOdds = [questions[questionId].inFavour, questions[questionId].against];
+        return true;
     }
 }
