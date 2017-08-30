@@ -27,6 +27,9 @@ contract PredictionMarket {
     
     struct Result {
         bool created;
+        // NOTE: this is important since these will never change once set.
+        // `inFavour` and `against` are for accounting and change as people withdraw.
+        // TODO: split this out, make it more explicit.
         uint[2] finalOdds;
         bool result;
     }
@@ -49,6 +52,11 @@ contract PredictionMarket {
     modifier isBetResolvePeriod(bytes32 questionId) {
         require(block.timestamp > questions[questionId].timeOfBetClose);
         require(block.timestamp < questions[questionId].resolutionDeadlineTime);
+        _;
+    }
+
+    modifier betIsResolved(bytes32 questionId) {
+        require(questions[questionId].result.created);
         _;
     }
 
@@ -134,5 +142,42 @@ contract PredictionMarket {
         questions[questionId].result.result = result;
         questions[questionId].result.finalOdds = [questions[questionId].inFavour, questions[questionId].against];
         return true;
+    }
+    
+    function calCalculatePayout(bytes32 questionId, address user) 
+        constant
+        betIsResolved(questionId)
+        returns (uint)
+    {
+        return calculatePayoutMath(
+            questions[questionId].inFavour, 
+            questions[questionId].against,
+            questions[questionId].positions[user].inFavour,
+            questions[questionId].positions[user].against,
+            questions[questionId].result.result
+        );
+            
+    }
+    
+    function calculatePayoutMath(uint inFavour, uint against, uint userFor, uint userAgainst, bool result)
+        internal
+        constant
+        returns (uint)
+    {   
+        uint numerator;
+        uint denominator;
+        uint scalor;
+        
+        if (result) {
+            numerator = against;
+            denominator = inFavour;
+            scalor = userFor;
+        } else {
+            numerator = inFavour;
+            denominator = against;
+            scalor = userAgainst;
+        }
+        // TODO:: Safe math! The `*` is particularly prone to overflow. Find way to mitigate this.
+        return scalor + ((scalor * numerator) / denominator);
     }
 }
