@@ -12,6 +12,7 @@ contract PredictionMarket {
         uint timeOfBetClose;
         uint resolutionDeadlineTime;
         address trustedSource;
+        bool exists;
     }
     
     struct Position {
@@ -41,13 +42,20 @@ contract PredictionMarket {
         uint resolutionDeadlineTime
     )
         external
+        payable
         isAdmin
     {   
-        // todo - make sure question doesn't exist
-        // make sure close date before resolution date
-        // make sure msg.value >= initialPositions
-        bytes32 questionId = sha3(questionStatement);
+        require(timeOfBetClose < resolutionDeadlineTime);
         
+        bytes32 questionId = sha3(questionStatement);
+
+        require(!questions[questionId].exists);
+        
+        uint initialQuestionValue = initialPosition[0] + initialPosition[0];
+        require(msg.value >= initialQuestionValue);
+        if (msg.value > initialQuestionValue) {
+            msg.sender.transfer(msg.value - initialQuestionValue);
+        }
         questions[questionId].questionStatement = questionStatement;
         questions[questionId].inFavour = initialPosition[0];
         questions[questionId].against = initialPosition[1];
