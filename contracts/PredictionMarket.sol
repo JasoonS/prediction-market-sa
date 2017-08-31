@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 
 contract PredictionMarket {
     address public admin;
-    mapping (bytes32 => Question) questions;
+    mapping (bytes32 => Question) public questions;
 
     event QuestionAddedEvent(string question, uint inFavour, uint against);
 
@@ -18,21 +18,17 @@ contract PredictionMarket {
         // TODO: add a `winningsClaimDeadline` variable, use with `withdrawRemaining` and create modifiers for relevant functions.
         address trustedSource;
         bool exists;
-        Result result;
+        
+        // result info: (only used when resolved)
+        bool resolved; // the outcome of the question (true/false) has been submitted.
+        uint finalInFavour;
+        uint finalAgainst;
+        bool result;
     }
     
     struct Position {
         uint inFavour;
         uint against;
-    }
-    
-    struct Result {
-        bool created;
-        // NOTE: this is important since these will never change once set.
-        // `inFavour` and `against` are for accounting and change as people withdraw.
-        // TODO: split this out, make it more explicit.
-        uint[2] finalOdds;
-        bool result;
     }
 
     modifier isAdmin() {
@@ -57,7 +53,7 @@ contract PredictionMarket {
     }
 
     modifier betIsResolved(bytes32 questionId) {
-        require(questions[questionId].result.created);
+        require(questions[questionId].resolved);
         _;
     }
 
@@ -143,9 +139,10 @@ contract PredictionMarket {
         betIsUnresolved(questionId)
         returns(bool)
     {
-        questions[questionId].result.created = true;
-        questions[questionId].result.result = result;
-        questions[questionId].result.finalOdds = [questions[questionId].inFavour, questions[questionId].against];
+        questions[questionId].resolved = true;
+        questions[questionId].result = result;
+        questions[questionId].finalInFavour = questions[questionId].inFavour;
+        questions[questionId].finalAgainst = questions[questionId].against;
         return true;
     }
     
@@ -156,11 +153,11 @@ contract PredictionMarket {
         returns (uint)
     {
         return calculatePayoutMath(
-            questions[questionId].inFavour, 
-            questions[questionId].against,
+            questions[questionId].finalInFavour, 
+            questions[questionId].finalAgainst,
             questions[questionId].positions[user].inFavour,
             questions[questionId].positions[user].against,
-            questions[questionId].result.result
+            questions[questionId].result
         );
             
     }
