@@ -32,7 +32,9 @@ contract("PredicationMarket", account => {
       )
     .then(tx => {
       console.log(instance.QuestionAddedEvent().formatter(tx.receipt.logs[0]))
+      return instance.questions(questionHash);
     })
+    .then(console.log)
   });
 
 });

@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 
 contract PredictionMarket {
     address public admin;
-    mapping (bytes32 => Question) questions;
+    mapping (bytes32 => Question) public questions;
 
     event QuestionAddedEvent(string question, uint inFavour, uint against);
 
