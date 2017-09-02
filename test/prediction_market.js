@@ -1,8 +1,6 @@
 web3.eth.getTransactionReceiptMined = require('./getTransactionReceiptMined.js')
 expectedExceptionPromise = require('./expectedException.js')
 
-console.log(expectedExceptionPromise)
-
 const PredictionMarket = artifacts.require("./PredictionMarket.sol")
 
 contract("PredicationMarket", account => {
@@ -13,9 +11,6 @@ contract("PredicationMarket", account => {
 
   var instance;
 
-  console.log("admin", web3.eth.getBalance(admin).toString());
-  console.log("trusted", web3.eth.getBalance(trusted).toString());
-  
   beforeEach(() => {
     return PredictionMarket.new({from: admin}).then(_instance => {instance = _instance})
   }); 
@@ -29,11 +24,7 @@ contract("PredicationMarket", account => {
     msToResolution = 20 * 60 * 1000;
 
     return instance.addQuestion(
-      question,
-      [1,2],
-      acc[1],
-      1,
-      2,
+      question, [1,2], acc[1], 1, 2,
       {from: admin, value: 3, gas: 3000000}
       )
     .then(function (tx) {
