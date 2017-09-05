@@ -13,7 +13,7 @@ contract("PredicationMarket", account => {
 
   beforeEach(() => {
     return PredictionMarket.new({from: admin}).then(_instance => {instance = _instance})
-  }); 
+  });
 
   it("should allow an administrator to create a question", function() {
 
@@ -24,12 +24,12 @@ contract("PredicationMarket", account => {
     msToResolution = 20 * 60 * 1000;
 
     return instance.addQuestion(
-      question, [1,2], acc[1], 1, 2,
+      question, [1,2], acc[1], 1, 2, 3,
       {from: admin, value: 3, gas: 3000000}
       )
     .then(function (tx) {
       return web3.eth.getTransactionReceiptMined(tx.tx);
-    })  
+    })
     .then(receipt => {
       return instance.questions(questionHash);
     })
@@ -48,7 +48,7 @@ contract("PredicationMarket", account => {
 
     return expectedExceptionPromise(() => {
       return instance.addQuestion(
-        question, [1,2], acc[1], 1, 2,
+        question, [1,2], acc[1], 1, 2, 3,
         {from: nonadmin, value: 3, gas: 3000000}
         )
     });

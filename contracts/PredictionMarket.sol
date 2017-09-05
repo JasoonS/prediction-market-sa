@@ -61,8 +61,18 @@ contract PredictionMarket {
         _;
     }
 
+    modifier claimPeriodComplete(bytes32 questionId) {
+        require(block.timestamp > questions[questionId].winningsClaimDeadline);
+        _;
+    }
+
     modifier betIsResolved(bytes32 questionId) {
         require(questions[questionId].resolved);
+        _;
+    }
+
+    modifier canClaim(bytes32 questionId, address user) {
+        require(!questions[questionId].positions[msg.sender].isClaimed);
         _;
     }
 
@@ -159,7 +169,7 @@ contract PredictionMarket {
 
     function calculatePayout(bytes32 questionId, address user)
         public
-        /*constant*/
+        constant
         betIsResolved(questionId)
         returns (uint)
     {
@@ -198,6 +208,7 @@ contract PredictionMarket {
         external
         constant
         isClaimPeriod(questionId)
+        canClaim(questionId, msg.sender)
         returns (bool)
     {
         // perform optimistic accounting to prevent chances of re-entry attack.
