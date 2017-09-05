@@ -23,8 +23,8 @@ contract PredictionMarket {
 
         // result info: (only used when resolved)
         bool resolved; // the outcome of the question (true/false) has been submitted.
-        uint finalInFavour;
-        uint finalAgainst;
+
+        uint moneyInPot;
         bool result;
     }
 
@@ -134,6 +134,8 @@ contract PredictionMarket {
 
         questions[questionId].positions[msg.sender].inFavour += initialPosition[0];
         questions[questionId].positions[msg.sender].against += initialPosition[1];
+
+        questions[questionId].moneyInPot = initialPosition[0] + initialPosition[1];
     }
 
     function getPosition (bytes32 questionId, address user)
@@ -162,8 +164,7 @@ contract PredictionMarket {
     {
         questions[questionId].resolved = true;
         questions[questionId].result = result;
-        questions[questionId].finalInFavour = questions[questionId].inFavour;
-        questions[questionId].finalAgainst = questions[questionId].against;
+
         return true;
     }
 
@@ -174,8 +175,8 @@ contract PredictionMarket {
         returns (uint)
     {
         return calculatePayoutMath(
-            questions[questionId].finalInFavour,
-            questions[questionId].finalAgainst,
+            questions[questionId].inFavour,
+            questions[questionId].against,
             questions[questionId].positions[user].inFavour,
             questions[questionId].positions[user].against,
             questions[questionId].result
@@ -206,27 +207,38 @@ contract PredictionMarket {
 
     function claimWinnings(bytes32 questionId)
         external
-        constant
         isClaimPeriod(questionId)
         canClaim(questionId, msg.sender)
-        returns (bool)
     {
         // perform optimistic accounting to prevent chances of re-entry attack.
         uint toSend = this.calculatePayout(questionId, msg.sender);
         questions[questionId].positions[msg.sender].isClaimed = true;
 
-        if (msg.sender.send(toSend)) {
-            LogClaim(
-                msg.sender,
-                questionId,
-                questions[questionId].positions[msg.sender].inFavour,
-                questions[questionId].positions[msg.sender].against
-            );
-            return true;
-        } else {
-            questions[questionId].positions[msg.sender].isClaimed = false;
-            return false;
-        }
+        msg.sender.transfer(toSend);
+
+        questions[questionId].moneyInPot = 0;
+        LogClaim(
+            msg.sender,
+            questionId,
+            questions[questionId].positions[msg.sender].inFavour,
+            questions[questionId].positions[msg.sender].against
+        );
     }
-    // TODO: add a `withdrawRemaining` function that can only be called once the withdraw period is over.
+
+    // once the claim period is over - the market-maker (in this case the admin) can retrieve all remaining funds.
+    function withdrawRemaining(bytes32 questionId)
+        external
+        claimPeriodComplete(questionId)
+        isAdmin
+    {
+        require(questions[questionId].moneyInPot > 0);
+
+        // perform optimistic accounting to prevent chances of re-entry attack.
+        uint toSend = questions[questionId].moneyInPot;
+        questions[questionId].moneyInPot += toSend;
+
+        msg.sender.transfer(toSend);
+
+        // TODO: add relevant 'Log'
+    }
 }
