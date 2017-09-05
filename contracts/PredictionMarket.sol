@@ -13,9 +13,11 @@ contract PredictionMarket {
         mapping (address => Position) positions;
         uint inFavour;
         uint against;
+        // TODO:: use block numbers instead of unix time for these values. (prevent potential manipulation via use of inacurate clocks by miners)
         uint timeOfBetClose;
         uint resolutionDeadlineTime;
-        // TODO: add a `winningsClaimDeadline` variable, use with `withdrawRemaining` and create modifiers for relevant functions.
+        uint winningsClaimDeadline;
+
         address trustedSource;
         bool exists;
 
@@ -55,7 +57,7 @@ contract PredictionMarket {
 
     modifier isClaimPeriod(bytes32 questionId) {
         require(block.timestamp > questions[questionId].resolutionDeadlineTime);
-        // TODO:
+        require(block.timestamp < questions[questionId].winningsClaimDeadline);
         _;
     }
 
@@ -73,7 +75,8 @@ contract PredictionMarket {
         uint[2] initialPosition,
         address trusteSsorce,
         uint timeOfBetClose,
-        uint resolutionDeadlineTime
+        uint resolutionDeadlineTime,
+        uint winningsClaimDeadline
     )
         external
         payable
@@ -96,6 +99,7 @@ contract PredictionMarket {
         questions[questionId].against = initialPosition[1];
         questions[questionId].timeOfBetClose = timeOfBetClose;
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
+        questions[questionId].winningsClaimDeadline = winningsClaimDeadline;
         questions[questionId].trustedSource = trusteSsorce;
 
         QuestionAddedEvent(questionStatement, initialPosition[0], initialPosition[1]);
