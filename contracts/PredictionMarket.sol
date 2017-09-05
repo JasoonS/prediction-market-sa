@@ -5,7 +5,7 @@ contract PredictionMarket {
     mapping (bytes32 => Question) public questions;
 
     event QuestionAddedEvent(string question, uint inFavour, uint against);
-
+    event LogClaim(address indexed recipient, bytes32 indexed questionId, uint inFavour, uint against);
     //Todo - use safemath
 
     struct Question {
@@ -18,37 +18,44 @@ contract PredictionMarket {
         // TODO: add a `winningsClaimDeadline` variable, use with `withdrawRemaining` and create modifiers for relevant functions.
         address trustedSource;
         bool exists;
-        
+
         // result info: (only used when resolved)
         bool resolved; // the outcome of the question (true/false) has been submitted.
         uint finalInFavour;
         uint finalAgainst;
         bool result;
     }
-    
+
     struct Position {
         uint inFavour;
         uint against;
+        bool isClaimed;
     }
 
     modifier isAdmin() {
         require(msg.sender == admin);
         _;
     }
-    
+
     modifier betIsUnresolved(bytes32 questionId) {
         require(block.timestamp < questions[questionId].timeOfBetClose);
         _;
     }
-    
+
     modifier betStillOpen(bytes32 questionId) {
         require(block.timestamp < questions[questionId].timeOfBetClose);
         _;
     }
-    
+
     modifier isBetResolvePeriod(bytes32 questionId) {
         require(block.timestamp > questions[questionId].timeOfBetClose);
         require(block.timestamp < questions[questionId].resolutionDeadlineTime);
+        _;
+    }
+
+    modifier isClaimPeriod(bytes32 questionId) {
+        require(block.timestamp > questions[questionId].resolutionDeadlineTime);
+        // TODO:
         _;
     }
 
@@ -60,7 +67,7 @@ contract PredictionMarket {
     function PredictionMarket() {
       admin = msg.sender;
     }
-    
+
     function addQuestion (
         string questionStatement,
         uint[2] initialPosition,
@@ -72,13 +79,13 @@ contract PredictionMarket {
         payable
         isAdmin
         returns(bytes32)
-    {   
+    {
         require(timeOfBetClose < resolutionDeadlineTime);
-        
+
         bytes32 questionId = sha3(questionStatement);
 
         require(!questions[questionId].exists);
-        
+
         uint initialQuestionValue = initialPosition[0] + initialPosition[1];
         require(msg.value >= initialQuestionValue);
         if (msg.value > initialQuestionValue) {
@@ -90,7 +97,7 @@ contract PredictionMarket {
         questions[questionId].timeOfBetClose = timeOfBetClose;
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].trustedSource = trusteSsorce;
-        
+
         QuestionAddedEvent(questionStatement, initialPosition[0], initialPosition[1]);
 
         return questionId;
@@ -107,14 +114,14 @@ contract PredictionMarket {
         if (msg.value > initialQuestionValue) {
             msg.sender.transfer(msg.value - initialQuestionValue);
         }
-        
+
         questions[questionId].inFavour += initialPosition[0];
         questions[questionId].against += initialPosition[1];
-        
+
         questions[questionId].positions[msg.sender].inFavour += initialPosition[0];
         questions[questionId].positions[msg.sender].against += initialPosition[1];
     }
-    
+
     function getPosition (bytes32 questionId, address user)
         external
         constant
@@ -123,7 +130,7 @@ contract PredictionMarket {
         inFavour = questions[questionId].positions[user].inFavour;
         against = questions[questionId].positions[user].against;
     }
-    
+
     function getBetOdds (bytes32 questionId)
         external
         constant
@@ -132,7 +139,7 @@ contract PredictionMarket {
         inFavour = questions[questionId].inFavour;
         against = questions[questionId].against;
     }
-    
+
     function closeBet (bytes32 questionId, bool result)
         external
         isBetResolvePeriod(questionId)
@@ -145,32 +152,31 @@ contract PredictionMarket {
         questions[questionId].finalAgainst = questions[questionId].against;
         return true;
     }
-    
-    function calCalculatePayout(bytes32 questionId, address user)
+
+    function calculatePayout(bytes32 questionId, address user)
         public
-        constant
+        /*constant*/
         betIsResolved(questionId)
         returns (uint)
     {
         return calculatePayoutMath(
-            questions[questionId].finalInFavour, 
+            questions[questionId].finalInFavour,
             questions[questionId].finalAgainst,
             questions[questionId].positions[user].inFavour,
             questions[questionId].positions[user].against,
             questions[questionId].result
         );
-            
     }
-    
+
     function calculatePayoutMath(uint inFavour, uint against, uint userFor, uint userAgainst, bool result)
         internal
         constant
         returns (uint)
-    {   
+    {
         uint numerator;
         uint denominator;
         uint scalor;
-        
+
         if (result) {
             numerator = against;
             denominator = inFavour;
@@ -183,7 +189,29 @@ contract PredictionMarket {
         // TODO:: Safe math! The `*` is particularly prone to overflow. Find way to mitigate this.
         return scalor + ((scalor * numerator) / denominator);
     }
-    
-    // TODO: add `claimWinnings` function
+
+    function claimWinnings(bytes32 questionId)
+        external
+        constant
+        isClaimPeriod(questionId)
+        returns (bool)
+    {
+        // perform optimistic accounting to prevent chances of re-entry attack.
+        uint toSend = this.calculatePayout(questionId, msg.sender);
+        questions[questionId].positions[msg.sender].isClaimed = true;
+
+        if (msg.sender.send(toSend)) {
+            LogClaim(
+                msg.sender,
+                questionId,
+                questions[questionId].positions[msg.sender].inFavour,
+                questions[questionId].positions[msg.sender].against
+            );
+            return true;
+        } else {
+            questions[questionId].positions[msg.sender].isClaimed = false;
+            return false;
+        }
+    }
     // TODO: add a `withdrawRemaining` function that can only be called once the withdraw period is over.
 }
