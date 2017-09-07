@@ -94,16 +94,12 @@ contract PredictionMarket {
         returns(bytes32)
     {
         require(timeOfBetClose < resolutionDeadlineTime);
+        require(resolutionDeadlineTime < winningsClaimDeadline);
 
         bytes32 questionId = sha3(questionStatement);
-
         require(!questions[questionId].exists);
 
-        uint initialQuestionValue = initialPosition[0] + initialPosition[1];
-        require(msg.value >= initialQuestionValue);
-        if (msg.value > initialQuestionValue) {
-            msg.sender.transfer(msg.value - initialQuestionValue);
-        }
+        questions[questionId].exists = true;
         questions[questionId].questionStatement = questionStatement;
         questions[questionId].inFavour = initialPosition[0];
         questions[questionId].against = initialPosition[1];
@@ -111,6 +107,12 @@ contract PredictionMarket {
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].winningsClaimDeadline = winningsClaimDeadline;
         questions[questionId].trustedSource = trusteSsorce;
+
+        uint initialQuestionValue = initialPosition[0] + initialPosition[1];
+        require(msg.value >= initialQuestionValue);
+        if (msg.value > initialQuestionValue) {
+            msg.sender.transfer(msg.value - initialQuestionValue);
+        }
 
         QuestionAddedEvent(questionStatement, initialPosition[0], initialPosition[1]);
 
@@ -123,12 +125,6 @@ contract PredictionMarket {
         betStillOpen(questionId)
         returns (bool)
     {
-        uint initialQuestionValue = initialPosition[0] + initialPosition[1];
-        require(msg.value >= initialQuestionValue);
-        if (msg.value > initialQuestionValue) {
-            msg.sender.transfer(msg.value - initialQuestionValue);
-        }
-
         questions[questionId].inFavour += initialPosition[0];
         questions[questionId].against += initialPosition[1];
 
@@ -136,6 +132,12 @@ contract PredictionMarket {
         questions[questionId].positions[msg.sender].against += initialPosition[1];
 
         questions[questionId].moneyInPot = initialPosition[0] + initialPosition[1];
+
+        uint initialQuestionValue = initialPosition[0] + initialPosition[1];
+        require(msg.value >= initialQuestionValue);
+        if (msg.value > initialQuestionValue) {
+            msg.sender.transfer(msg.value - initialQuestionValue);
+        }
     }
 
     function getPosition (bytes32 questionId, address user)
@@ -160,6 +162,7 @@ contract PredictionMarket {
         external
         isBetResolvePeriod(questionId)
         betIsUnresolved(questionId)
+        isAdmin
         returns(bool)
     {
         questions[questionId].resolved = true;
@@ -167,6 +170,8 @@ contract PredictionMarket {
 
         return true;
     }
+
+    // TODO: if admin forgets / refuses to close the bet in time, allow users to withdraw all their funds safely.
 
     function calculatePayout(bytes32 questionId, address user)
         public
