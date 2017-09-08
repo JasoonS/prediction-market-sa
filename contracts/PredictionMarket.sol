@@ -3,6 +3,7 @@ pragma solidity ^0.4.15;
 contract PredictionMarket {
     address public admin;
     mapping (bytes32 => Question) public questions;
+    bytes32[] public questionsList; // TODO : this list is currently append only and unscalable.
 
     event QuestionAddedEvent(string question, uint inFavour, uint against);
     event LogClaim(address indexed recipient, bytes32 indexed questionId, uint inFavour, uint against);
@@ -77,7 +78,7 @@ contract PredictionMarket {
     }
 
     function PredictionMarket() {
-      admin = msg.sender;
+        admin = msg.sender;
     }
 
     function addQuestion (
@@ -107,6 +108,7 @@ contract PredictionMarket {
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].winningsClaimDeadline = winningsClaimDeadline;
         questions[questionId].trustedSource = trusteSsorce;
+        questionsList.push(questionId);
 
         uint initialQuestionValue = initialPosition[0] + initialPosition[1];
         require(msg.value >= initialQuestionValue);
@@ -156,6 +158,19 @@ contract PredictionMarket {
     {
         inFavour = questions[questionId].inFavour;
         against = questions[questionId].against;
+    }
+    
+    // TODO: this function is completely unscalable, add some sort of CRUD mechanism to automatically maintain question list (currently append only)
+    function getQuestionList ()
+        constant
+        returns (bytes32[] quesitonIds)
+    {
+        uint length = questionsList.length;
+        quesitonIds = new bytes32[](length);
+
+        for (uint i = 0; i < length; i++) {
+            quesitonIds[i] = questionsList[i];
+        }
     }
 
     function closeBet (bytes32 questionId, bool result)
