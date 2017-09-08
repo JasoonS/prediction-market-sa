@@ -1,7 +1,8 @@
 import getTransactionReceiptMined from '../../utils/getTransactionReceiptMined'
 
 export const actions = {
-  SAVE_QUESTION_LIST: 'SAVE_QUESTION_LIST',
+  SAVE_QUESTION_ARRAY: 'SAVE_QUESTION_ARRAY',
+  SAVE_QUESTION_DETAILS: 'SAVE_QUESTION_DETAILS',
   ADD_QUESTION_PENDING: 'ADD_QUESTION_PENDING', // TODO:: unimplemented in reducer, add later for better UX.
   ADD_QUESTION_COMPLETE: 'ADD_QUESTION_COMPLETE', // TODO:: unimplemented in reducer, add later for better UX.
   SAVE_ADMIN: 'SAVE_ADMIN',
@@ -9,13 +10,30 @@ export const actions = {
 
 //TODO:: Add a function that easily curries all of these actions to include `(predictionMarketInstance, accounts)`.
 
-export const loadQuestionList = (predictionMarketInstance, accounts) => {
+export const loadQuestionArray = (predictionMarketInstance) => {
   return dispatch => {
-    predictionMarketInstance.getQuestionList().then((result) => {
-        dispatch({
-          type: actions.SAVE_QUESTION_LIST,
-          questionList: result
-        })
+    predictionMarketInstance.getQuestionList().then((questionList) => {
+      dispatch({
+        type: actions.SAVE_QUESTION_ARRAY,
+        questionList
+      })
+      questionList.map(questionId => dispatch(loadQuestionInfoById(predictionMarketInstance, questionId)))
+    })
+  }
+}
+
+export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
+  return dispatch => {
+    predictionMarketInstance.questions(questionId).then((questionDetailsArray) => {
+      const questionDetails = {
+        statement: questionDetailsArray[0]
+        // TODO:: add more relevant question details.
+      }
+      dispatch({
+        type: actions.SAVE_QUESTION_DETAILS,
+        questionId,
+        questionDetails
+      })
     })
   }
 }
@@ -44,7 +62,7 @@ export const addQuestion = (predictionMarketInstance, accounts) => {
     }).then(receipt => {
       dispatch({ type: actions.ADD_QUESTION_COMPLETE })
       // update the question list after a new question is added.
-      dispatch(loadQuestionList)
+      dispatch(loadQuestionArray)
     })
   }
 }

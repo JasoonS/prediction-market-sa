@@ -1,25 +1,34 @@
 import React, { Component } from 'react'
-import { loadQuestionList } from '../actions'
+import { loadQuestionArray } from '../actions'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
-class QuestionList extends Component {
+class questionArray extends Component {
   componentWillMount() {
     if(this.context.instanceLoaded){
       this.props.dispatch(
-        loadQuestionList(this.context.predMarketInstance, this.context.accounts)
+        loadQuestionArray(this.context.predMarketInstance, this.context.accounts)
       )
     }
   }
 
   render() {
+    const {
+      questionArray,
+      questionDictionary
+    } = this.props
+    const listItems = questionArray.map((item) => <p>{questionDictionary[item].statement}</p>)
+
     return (
-      <h1>hello I'm a list</h1>
+      <div>
+        <h1>Question List</h1>
+        {listItems}
+      </div>
     )
   }
 }
 
-QuestionList.contextTypes = {
+questionArray.contextTypes = {
   instanceLoaded: PropTypes.bool,
   accounts: PropTypes.array,
   web3: PropTypes.object,
@@ -28,8 +37,9 @@ QuestionList.contextTypes = {
 
 const mapStateToProps = state => {
   return {
-    questionList: state.questionList
-   }
+    questionArray: state.questionArray,
+    questionDictionary: state.questionDictionary
+  }
 }
 
-export default connect(mapStateToProps)(QuestionList)
+export default connect(mapStateToProps)(questionArray)

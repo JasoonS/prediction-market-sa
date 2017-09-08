@@ -3,7 +3,8 @@ import {
 } from '../actions'
 
 const initialState = {
-  questionList: [],
+  questionArray: [],
+  questionDictionary: {},
   user: {
     loaded: false,
     isAdmin: false,
@@ -13,10 +14,17 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actions.SAVE_QUESTION_LIST:
+    case actions.SAVE_QUESTION_ARRAY:
+      const questionDictionary = action.questionList.reduce(
+        (obj, item) => {
+          obj[item] = {}
+          return obj
+        }, {}
+      )
       return {
         ...state,
-        questionList: action.questionList
+        questionArray: action.questionList,
+        questionDictionary: questionDictionary
       }
     case actions.SAVE_ADMIN:
       const user = {
@@ -27,6 +35,15 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         user: user
+      }
+    case actions.SAVE_QUESTION_DETAILS:
+      console.log(action.questionId)
+      return {
+        ...state,
+        questionDictionary : {
+           ...state.questionDictionary,
+           [action.questionId] : action.questionDetails
+       }
       }
     default:
       return state
