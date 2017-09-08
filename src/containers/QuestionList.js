@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { loadQuestionArray } from '../actions'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
+import QuestionItem from '../components/QuestionItem'
 
 class questionArray extends Component {
   componentWillMount() {
@@ -17,7 +18,7 @@ class questionArray extends Component {
       questionArray,
       questionDictionary
     } = this.props
-    const listItems = questionArray.map((item) => <p>{questionDictionary[item].statement}</p>)
+    const listItems = questionArray.map((item) => <QuestionItem questionStatement={questionDictionary[item].statement}/>)
 
     return (
       <div>

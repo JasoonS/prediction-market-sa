@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import QuestionList from './Containers/QuestionList'
+import QuestionList from './containers/QuestionList'
 import { connect } from 'react-redux'
 import { VisibleOnlyAdmin, VisibleOnlyUser } from './utils/wrappers.js'
 import { loadUsers } from './actions'
