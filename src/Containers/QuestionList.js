@@ -1,13 +1,9 @@
 import React, { Component } from 'react'
-import {loadQuestionList} from '../actions'
+import { loadQuestionList } from '../actions'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
 class QuestionList extends Component {
-  constructor(props) {
-    super(props)
-  }
-
   componentWillMount() {
     if(this.context.instanceLoaded){
       this.props.dispatch(

@@ -3,7 +3,12 @@ import {
 } from '../actions'
 
 const initialState = {
-  questionList: []
+  questionList: [],
+  user: {
+    loaded: false,
+    isAdmin: false,
+    userAddress: null
+  }
 }
 
 const reducer = (state = initialState, action) => {
@@ -12,6 +17,16 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         questionList: action.questionList
+      }
+    case actions.SAVE_ADMIN:
+      const user = {
+        loaded: true,
+        isAdmin: (action.adminAddress === action.userAddress),
+        userAddress: action.userAddress
+      }
+      return {
+        ...state,
+        user: user
       }
     default:
       return state
