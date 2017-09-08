@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import QuestionList from './containers/QuestionList'
+import AddQuestion from './containers/AddQuestion'
 import { connect } from 'react-redux'
 import { VisibleOnlyAdmin, VisibleOnlyUser } from './utils/wrappers.js'
 import { loadUsers } from './actions'
@@ -27,6 +28,8 @@ class App extends Component {
       </span>
     )
 
+    const AdminOnlyAddQuestion = VisibleOnlyAdmin(() => <AddQuestion/>)
+
     const UserOnlyLinks = VisibleOnlyUser(() =>
       <span>
         <li className="pure-menu-item">
@@ -45,6 +48,7 @@ class App extends Component {
         <main className="container">
           <div className="pure-g">
             <div className="pure-u-1-1">
+              <AdminOnlyAddQuestion/>
               <QuestionList/>
             </div>
           </div>

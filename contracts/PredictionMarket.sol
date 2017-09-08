@@ -84,7 +84,7 @@ contract PredictionMarket {
     function addQuestion (
         string questionStatement,
         uint[2] initialPosition,
-        address trusteSsorce,
+        address trustedSource,
         uint timeOfBetClose,
         uint resolutionDeadlineTime,
         uint winningsClaimDeadline
@@ -107,7 +107,7 @@ contract PredictionMarket {
         questions[questionId].timeOfBetClose = timeOfBetClose;
         questions[questionId].resolutionDeadlineTime = resolutionDeadlineTime;
         questions[questionId].winningsClaimDeadline = winningsClaimDeadline;
-        questions[questionId].trustedSource = trusteSsorce;
+        questions[questionId].trustedSource = trustedSource;
         questionsList.push(questionId);
 
         uint initialQuestionValue = initialPosition[0] + initialPosition[1];
@@ -159,7 +159,7 @@ contract PredictionMarket {
         inFavour = questions[questionId].inFavour;
         against = questions[questionId].against;
     }
-    
+
     // TODO: this function is completely unscalable, add some sort of CRUD mechanism to automatically maintain question list (currently append only)
     function getQuestionList ()
         constant

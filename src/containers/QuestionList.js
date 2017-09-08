@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import QuestionItem from '../components/QuestionItem'
 
-class questionArray extends Component {
+class QuestionArray extends Component {
   componentWillMount() {
     if(this.context.instanceLoaded){
       this.props.dispatch(
@@ -29,7 +29,7 @@ class questionArray extends Component {
   }
 }
 
-questionArray.contextTypes = {
+QuestionArray.contextTypes = {
   instanceLoaded: PropTypes.bool,
   accounts: PropTypes.array,
   web3: PropTypes.object,
@@ -43,4 +43,4 @@ const mapStateToProps = state => {
   }
 }
 
-export default connect(mapStateToProps)(questionArray)
+export default connect(mapStateToProps)(QuestionArray)
