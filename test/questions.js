@@ -3,7 +3,7 @@ const helpers = require('./helpers')
 
 const addQuestion = helpers.addQuestion
 const handleError = helpers.handleError
-const createDefaultQuestionParam = helpers.createDefaultQuestionParam
+const createDefaultQuestionParams = helpers.createDefaultQuestionParams
 const acc = helpers.accounts()
 
 contract('PredicationMarket', account => {
@@ -12,14 +12,14 @@ contract('PredicationMarket', account => {
 
   beforeEach(async function () {
     instance = await PredictionMarket.new({from: acc.admin})
-    defaultQuestion = createDefaultQuestionParam(instance)
+    defaultQuestionParams = createDefaultQuestionParams(instance)
   })
 
   describe('Add Question', () => {
     it('should allow an administrator to create a question', async function () {
-      await addQuestion(defaultQuestion)
+      await addQuestion(defaultQuestionParams)
 
-      questionHash = web3.sha3(defaultQuestion.question)
+      questionHash = web3.sha3(defaultQuestionParams.question)
       let q = await instance.questions(questionHash)
 
       assert.equal(q[0], question, 'Question was not added.')
@@ -27,15 +27,15 @@ contract('PredicationMarket', account => {
 
     describe('should throw if', () => {
       it('question exists', async function () {
-        await addQuestion(defaultQuestion)
+        await addQuestion(defaultQuestionParams)
 
-        return await await addQuestion(defaultQuestion)
+        return await addQuestion(defaultQuestionParams)
         .catch(e => handleError(e))
       })
 
       // transaction sent from nonadmin
       it('non-administrator to create a question', async function () {
-        question = defaultQuestion
+        question = defaultQuestionParams
         question.from = acc.nonadmin
         return await addQuestion(question)
         .catch(e => handleError(e))
@@ -43,7 +43,7 @@ contract('PredicationMarket', account => {
 
       // resolutionDeadlineTime is set to current time i.e. before timeOfBetClose
       it('time of bet close is after resolution deadline', async function () {
-        question = defaultQuestion
+        question = defaultQuestionParams
         question.resolutionDeadlineTime = question.timeOfBetClose - 1
         return await addQuestion(question)
         .catch(e => handleError(e))

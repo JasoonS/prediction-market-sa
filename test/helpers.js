@@ -21,7 +21,7 @@ module.exports = {
     return {admin, trusted, nonadmin}
   },
 
-  createDefaultQuestionParam: function (instance) {
+  createDefaultQuestionParams: function (instance) {
     now = Date.now()
 
     from = admin
