@@ -51,19 +51,27 @@ export const loadUsers = (predictionMarketInstance, accounts) => {
   }
 }
 
-export const addQuestion = (predictionMarketInstance, accounts, questionStatement, oddsFor, oddsAgainst, initalLiquidity, timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, trustedSource) => {
+export const addQuestion = (predictionMarketInstance, accounts, questionStatement, amountFor, amountAgainst, timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, trustedSource) => {
   predictionMarketInstance.getTransactionReceiptMined = getTransactionReceiptMined // TODO:: Do this more efficiently (ie only once) at startup.
+
+  const initialLiquidity = amountFor + amountAgainst
   return dispatch => {
     predictionMarketInstance.addQuestion(
-      questionStatement, [1,2], accounts[0], 1, 2, 3,
-      {from: accounts[0], value: 3, gas: 3000000}
-    ).then((tx) => {
-      dispatch({ type: actions.ADD_QUESTION_PENDING })
-      return predictionMarketInstance.getTransactionReceiptMined(tx.tx)
-    }).then(receipt => {
-      dispatch({ type: actions.ADD_QUESTION_COMPLETE })
-      // update the question list after a new question is added.
-      dispatch(loadQuestionArray)
+      questionStatement,
+      [amountFor, amountAgainst],
+      trustedSource,
+      timeOfBetClose,
+      resolutionDeadlineTime,
+      winningsClaimDeadline,
+      {from: accounts[0], value: initialLiquidity, gas: 3000000}
+    )
+    .then((tx) => {
+      //   dispatch({ type: actions.ADD_QUESTION_COMPLETE })
+      dispatch({ type: actions.ADD_QUESTION_PENDING }) // TODO:: Do some research, do truffle contract instances return from promises only when they have been mined?
     })
+    .catch(function(e) {
+      // TODO:: Handle this error.
+    })
+    // TODO:: listen to events to log when ADD_QUESTION_COMPLETE
   }
 }

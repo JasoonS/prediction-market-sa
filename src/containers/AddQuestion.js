@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { addQuestion } from '../actions'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import QuestionItem from '../components/QuestionItem'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 var ethereum_address = require('ethereum-address')
@@ -28,22 +27,22 @@ class AddQuestion extends Component {
     this.setState({...this.state, questionStatement})
   }
   setOddsFor = (event, oddsFor) => {
-    this.setState({...this.state, oddsFor})
+    this.setState({...this.state, oddsFor: parseInt(oddsFor)})
   }
   setOddsAgainst = (event, oddsAgainst) => {
-    this.setState({...this.state, oddsAgainst})
+    this.setState({...this.state, oddsAgainst: parseInt(oddsAgainst)})
   }
   setInitalLiquidity = (event, initalLiquidity) => {
-    this.setState({...this.state, initalLiquidity})
+    this.setState({...this.state, initalLiquidity: parseInt(initalLiquidity)})
   }
   setTimeOfBetClose = (event, timeOfBetClose) => {
-    this.setState({...this.state, timeOfBetClose})
+    this.setState({...this.state, timeOfBetClose: parseInt(timeOfBetClose)})
   }
   setesolutionDeadlineTime = (event, resolutionDeadlineTime) => {
-    this.setState({...this.state, resolutionDeadlineTime})
+    this.setState({...this.state, resolutionDeadlineTime: parseInt(resolutionDeadlineTime)})
   }
   setWinningsClaimDeadline = (event, winningsClaimDeadline) => {
-    this.setState({...this.state, winningsClaimDeadline})
+    this.setState({...this.state, winningsClaimDeadline: parseInt(winningsClaimDeadline)})
   }
   setTrustedSource = (event, trustedSource) => {
     this.setState({...this.state, trustedSource})
@@ -77,8 +76,11 @@ class AddQuestion extends Component {
 
   submitCreateQuestionRequest = allError => {
     if (allError !== '') return // TODO:: Write a nice error message, make this more user friendly.
+    // TODO:: Prevent an empty submit, and if submit show all errors (even if empty)
 
-    console.log('createQuestion')
+    // if trusted source is empty use the admin account.
+    const trustedSource = ( this.state.trustedSource === '') ? this.context.accounts[0] : this.state.trustedSource
+
     this.props.dispatch(
       addQuestion(
         this.context.predMarketInstance,
@@ -90,7 +92,7 @@ class AddQuestion extends Component {
         this.state.timeOfBetClose,
         this.state.resolutionDeadlineTime,
         this.state.winningsClaimDeadline,
-        this.state.trustedSource
+        trustedSource
       )
     )
   }

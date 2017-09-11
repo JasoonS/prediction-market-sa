@@ -18,7 +18,10 @@ class QuestionArray extends Component {
       questionArray,
       questionDictionary
     } = this.props
-    const listItems = questionArray.map((item) => <QuestionItem questionStatement={questionDictionary[item].statement}/>)
+    const listItems = questionArray.map(
+      (item, index) =>
+        <QuestionItem key={index} questionStatement={questionDictionary[item].statement}/>
+    )
 
     return (
       <div>
