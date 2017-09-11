@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { loadAddQuestion } from '../actions'
+import { addQuestion } from '../actions'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import QuestionItem from '../components/QuestionItem'
@@ -67,13 +67,32 @@ class AddQuestion extends Component {
   }
   isWinningsClaimDeadlineValid = () => {
     const {winningsClaimDeadline, timeOfBetClose} = this.state
-    console.log(winningsClaimDeadline, timeOfBetClose)
     if (winningsClaimDeadline == null) return ''
     if (winningsClaimDeadline < timeOfBetClose) return 'The winnings claim deadline must be after the resolution deadline.'
     return this.isGreaterThanZero(winningsClaimDeadline, this.emptyError)
   }
   isTrustedSourceValid = () => {
     return (this.state.trustedSource === '') ? '' : (ethereum_address.isAddress(this.state.trustedSource)? '' : 'This is not a valid ethereum address. Please be careful.')
+  }
+
+  submitCreateQuestionRequest = allError => {
+    if (allError !== '') return // TODO:: Write a nice error message, make this more user friendly.
+
+    console.log('createQuestion')
+    this.props.dispatch(
+      addQuestion(
+        this.context.predMarketInstance,
+        this.context.accounts,
+        this.state.questionStatement,
+        this.state.oddsFor,
+        this.state.oddsAgainst,
+        this.state.initalLiquidity,
+        this.state.timeOfBetClose,
+        this.state.resolutionDeadlineTime,
+        this.state.winningsClaimDeadline,
+        this.state.trustedSource
+      )
+    )
   }
 
   render() {
@@ -87,7 +106,16 @@ class AddQuestion extends Component {
       winningsClaimDeadline,
       trustedSource
     } = this.state
-    console.log(this.state)
+
+    const questionStatementError = this.isQuestionStatementValid()
+    const oddsForError = this.isGreaterThanZero(oddsFor, this.emptyError)
+    const oddsAgainstError = this.isGreaterThanZero(oddsAgainst, this.emptyError)
+    const initalLiquidityError = this.isGreaterThanZero(initalLiquidity, this.emptyError)
+    const timeOfBetCloseError = this.isGreaterThanZero(timeOfBetClose, this.emptyError)
+    const resolutionDeadlineTimeError = this.isResolutionDeadlineTimeValid()
+    const winningsClaimDeadlineError = this.isWinningsClaimDeadlineValid()
+    const trustedSourceError = this.isTrustedSourceValid()
+    const allError = questionStatementError + oddsForError + oddsAgainstError + initalLiquidityError + timeOfBetCloseError + resolutionDeadlineTimeError + winningsClaimDeadlineError + trustedSourceError
     return (
       <div>
         <h1>Add Question</h1>
@@ -97,7 +125,7 @@ class AddQuestion extends Component {
             hintText='Enter your question statement in terms of a true/false question'
             fullWidth={true}
             onChange={this.setQuestionStatement}
-            errorText={this.isQuestionStatementValid()}
+            errorText={questionStatementError}
           /><br />
           <div style={{
             flex: 1,
@@ -109,21 +137,21 @@ class AddQuestion extends Component {
               floatingLabelText='Initial Odds For'
               type='number'
               onChange={this.setOddsFor}
-              errorText={this.isGreaterThanZero(oddsFor, this.emptyError)}
+              errorText={oddsForError}
             />
             <TextField
               hintText='Ratio against.'
               floatingLabelText='Initial Odds Against'
               type='number'
               onChange={this.setOddsAgainst}
-              errorText={this.isGreaterThanZero(oddsAgainst, this.emptyError)}
+              errorText={oddsAgainstError}
             />
             <TextField
               hintText='Initial liquidity provided.'
               floatingLabelText='Total Initial Market Value'
               type='number'
               onChange={this.setInitalLiquidity}
-              errorText={this.isGreaterThanZero(initalLiquidity, this.emptyError)}
+              errorText={initalLiquidityError}
             />
           </div><br />
           <div style={{
@@ -136,21 +164,21 @@ class AddQuestion extends Component {
               floatingLabelText='Time of Bet Close'
               type='number'
               onChange={this.setTimeOfBetClose}
-              errorText={this.isGreaterThanZero(timeOfBetClose, this.emptyError)}
+              errorText={timeOfBetCloseError}
             />
             <TextField
               hintText='Enter a block number.'
               floatingLabelText='Resolution Deadline'
               type='number'
               onChange={this.setesolutionDeadlineTime}
-              errorText={this.isResolutionDeadlineTimeValid()}
+              errorText={resolutionDeadlineTimeError}
             />
             <TextField
               hintText='Enter a block number.'
               floatingLabelText='Winnings Claim Deadline'
               type='number'
               onChange={this.setWinningsClaimDeadline}
-              errorText={this.isWinningsClaimDeadlineValid()}
+              errorText={winningsClaimDeadlineError}
             />
           </div><br />
           {/*TODO:: use `npm install ethereum-address` later to test*/}
@@ -159,9 +187,9 @@ class AddQuestion extends Component {
             hintText='The address of the person you entrust to resolve this bet. (leave blank if yourself)'
             fullWidth={true}
             onChange={this.setTrustedSource}
-            errorText={this.isTrustedSourceValid()}
+            errorText={trustedSourceError}
           />
-          <RaisedButton label='Create Question' fullWidth={true} />
+          <RaisedButton label='Create Question' fullWidth={true} onClick={() => this.submitCreateQuestionRequest(allError)}/>
         </div>
       </div>
     )

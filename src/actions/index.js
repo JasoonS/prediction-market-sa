@@ -10,18 +10,6 @@ export const actions = {
 
 //TODO:: Add a function that easily curries all of these actions to include `(predictionMarketInstance, accounts)`.
 
-export const loadQuestionArray = (predictionMarketInstance) => {
-  return dispatch => {
-    predictionMarketInstance.getQuestionList().then((questionList) => {
-      dispatch({
-        type: actions.SAVE_QUESTION_ARRAY,
-        questionList
-      })
-      questionList.map(questionId => dispatch(loadQuestionInfoById(predictionMarketInstance, questionId)))
-    })
-  }
-}
-
 export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
   return dispatch => {
     predictionMarketInstance.questions(questionId).then((questionDetailsArray) => {
@@ -34,6 +22,18 @@ export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
         questionId,
         questionDetails
       })
+    })
+  }
+}
+
+export const loadQuestionArray = (predictionMarketInstance) => {
+  return dispatch => {
+    predictionMarketInstance.getQuestionList().then((questionList) => {
+      dispatch({
+        type: actions.SAVE_QUESTION_ARRAY,
+        questionList
+      })
+      questionList.map(questionId => dispatch(loadQuestionInfoById(predictionMarketInstance, questionId)))
     })
   }
 }
@@ -51,14 +51,15 @@ export const loadUsers = (predictionMarketInstance, accounts) => {
   }
 }
 
-export const addQuestion = (predictionMarketInstance, accounts) => {
+export const addQuestion = (predictionMarketInstance, accounts, questionStatement, oddsFor, oddsAgainst, initalLiquidity, timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, trustedSource) => {
+  predictionMarketInstance.getTransactionReceiptMined = getTransactionReceiptMined // TODO:: Do this more efficiently (ie only once) at startup.
   return dispatch => {
     predictionMarketInstance.addQuestion(
-      '1235', [1,2], accounts[0], 1, 2, 3,
+      questionStatement, [1,2], accounts[0], 1, 2, 3,
       {from: accounts[0], value: 3, gas: 3000000}
     ).then((tx) => {
       dispatch({ type: actions.ADD_QUESTION_PENDING })
-      return getTransactionReceiptMined(tx.tx);
+      return predictionMarketInstance.getTransactionReceiptMined(tx.tx)
     }).then(receipt => {
       dispatch({ type: actions.ADD_QUESTION_COMPLETE })
       // update the question list after a new question is added.
