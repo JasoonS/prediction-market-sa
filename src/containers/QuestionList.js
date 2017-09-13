@@ -20,7 +20,7 @@ class QuestionArray extends Component {
     } = this.props
     const listItems = questionArray.map(
       (item, index) =>
-        <QuestionItem key={index} questionStatement={questionDictionary[item].statement}/>
+        <QuestionItem key={index} questionData={questionDictionary[item]}/>
     )
 
     return (

@@ -5,7 +5,7 @@ contract PredictionMarket {
     mapping (bytes32 => Question) public questions;
     bytes32[] public questionsList; // TODO : this list is currently append only and unscalable.
 
-    event LogQuestionAdded(string questionStatement, bytes32 indexed questionId, uint inFavour, uint against);
+    event LogQuestionAdded(string questionStatement, bytes32 indexed questionId, uint inFavour, uint against, uint timeOfBetClose, uint resolutionDeadlineTime, uint winningsClaimDeadline, address trustedSource);
     event LogClaim(address indexed recipient, bytes32 indexed questionId, uint inFavour, uint against);
     //Todo - use safemath
 
@@ -116,7 +116,7 @@ contract PredictionMarket {
             msg.sender.transfer(msg.value - initialQuestionValue);
         }
 
-        LogQuestionAdded(questionStatement, questionId, initialPosition[0], initialPosition[1]);
+        LogQuestionAdded(questionStatement, questionId, initialPosition[0], initialPosition[1], timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, trustedSource);
 
         return questionId;
     }

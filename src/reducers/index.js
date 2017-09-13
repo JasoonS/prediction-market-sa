@@ -37,7 +37,6 @@ const reducer = (state = initialState, action) => {
         user: user
       }
     case actions.SAVE_QUESTION_DETAILS:
-      console.log(action.questionId)
       return {
         ...state,
         questionDictionary : {
@@ -46,12 +45,21 @@ const reducer = (state = initialState, action) => {
        }
       }
     case actions.NEW_QUESTION_ADDED:
+      console.log('from event', action.questionObject)
       // prevent duplicate items in your array.
       const questionArray = (state.questionArray.indexOf(action.questionObject.questionId) > 0)?
         state.questionArray : [...state.questionArray, action.questionObject.questionId]
 
       const questienDetails = {
-        statement: action.questionObject.questionStatement
+        statement: action.questionObject.questionStatement,
+        questionId: action.questionObject.questionId,
+        inFavour: action.questionObject.inFavour,
+        against: action.questionObject.against,
+        timeOfBetClose: action.questionObject.timeOfBetClose,
+        resolutionDeadlineTime: action.questionObject.resolutionDeadlineTime,
+        winningsClaimDeadline: action.questionObject.winningsClaimDeadline,
+        trustedSource: action.questionObject.trustedSource,
+        resolved: false
       }
       return {
         ...state,
@@ -61,9 +69,6 @@ const reducer = (state = initialState, action) => {
           [action.questionObject.questionId] : questienDetails
         }
       }
-
-
-
     default:
       return state
   }

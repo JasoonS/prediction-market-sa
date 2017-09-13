@@ -26,16 +26,19 @@ export default class QuestionItem extends React.Component {
   }
 
   render() {
+    const messageSubtitle = "For " + 1 + " against " + 2 + "."
+    const message = JSON.stringify(this.props.questionData, null, 2)
     return (
       <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
+        {/*TODO:: put the question ID info here.*/}
         <CardHeader
-          title={this.props.questionStatement}
-          subtitle="TODO:: put info about question status."
+          title={this.props.questionData.statement}
+          subtitle={messageSubtitle}
           actAsExpander={true}
           showExpandableButton={true}
         />
         <CardText expandable={true}>
-          Put more details and controlls in here...
+          <pre>{message}</pre>
         </CardText>
       </Card>
     )

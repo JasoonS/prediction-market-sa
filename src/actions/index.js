@@ -15,7 +15,15 @@ export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
   return dispatch => {
     predictionMarketInstance.questions(questionId).then((questionDetailsArray) => {
       const questionDetails = {
-        statement: questionDetailsArray[0]
+        statement: questionDetailsArray[0],
+        questionId,
+        inFavour: questionDetailsArray[1],
+        against: questionDetailsArray[2],
+        timeOfBetClose: questionDetailsArray[3],
+        resolutionDeadlineTime: questionDetailsArray[4],
+        winningsClaimDeadline: questionDetailsArray[5],
+        trustedSource: questionDetailsArray[6],
+        resolved: questionDetailsArray[8],
         // TODO:: add more relevant question details.
       }
       dispatch({
@@ -89,8 +97,6 @@ export const addQuestion = (
 
 // this is currently very simple, since only admin exists, could have more complexity when different user roles emerge
 export const newQuestionAdded = (predictionMarketInstance, questionObject) => {
-  console.log('new Question, added', questionObject)
-
   return {
     type: actions.NEW_QUESTION_ADDED,
     questionObject
