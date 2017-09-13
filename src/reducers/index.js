@@ -45,6 +45,25 @@ const reducer = (state = initialState, action) => {
            [action.questionId] : action.questionDetails
        }
       }
+    case actions.NEW_QUESTION_ADDED:
+      // prevent duplicate items in your array.
+      const questionArray = (state.questionArray.indexOf(action.questionObject.questionId) > 0)?
+        state.questionArray : [...state.questionArray, action.questionObject.questionId]
+
+      const questienDetails = {
+        statement: action.questionObject.questionStatement
+      }
+      return {
+        ...state,
+        questionArray,
+        questionDictionary : {
+          ...state.questionDictionary,
+          [action.questionObject.questionId] : questienDetails
+        }
+      }
+
+
+
     default:
       return state
   }

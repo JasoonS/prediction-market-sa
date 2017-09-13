@@ -78,6 +78,9 @@ class AddQuestion extends Component {
     if (allError !== '') return // TODO:: Write a nice error message, make this more user friendly.
     // TODO:: Prevent an empty submit, and if submit show all errors (even if empty)
 
+    // TODO:: calculate the amountFor/Against using odds and `initialLiquidity`
+    const amountFor = this.state.oddsFor
+    const amountAgainst = this.state.oddsAgainst
     // if trusted source is empty use the admin account.
     const trustedSource = ( this.state.trustedSource === '') ? this.context.accounts[0] : this.state.trustedSource
 
@@ -86,9 +89,8 @@ class AddQuestion extends Component {
         this.context.predMarketInstance,
         this.context.accounts,
         this.state.questionStatement,
-        this.state.oddsFor,
-        this.state.oddsAgainst,
-        this.state.initalLiquidity,
+        amountFor,
+        amountAgainst,
         this.state.timeOfBetClose,
         this.state.resolutionDeadlineTime,
         this.state.winningsClaimDeadline,
@@ -207,8 +209,9 @@ AddQuestion.contextTypes = {
 
 const mapStateToProps = state => {
   return {
-    AddQuestion: state.AddQuestion,
-    questionDictionary: state.questionDictionary
+    // AddQuestion: state.AddQuestion,
+    questionDictionary: state.questionDictionary,
+    userBlabla: state.user
   }
 }
 
