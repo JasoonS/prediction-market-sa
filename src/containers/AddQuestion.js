@@ -14,7 +14,7 @@ class AddQuestion extends Component {
       questionStatement: '',
       oddsFor: null,
       oddsAgainst: null,
-      initalLiquidity: null,
+      initialLiquidity: null,
       timeOfBetClose: null,
       resolutionDeadlineTime: null,
       winningsClaimDeadline: null,
@@ -32,8 +32,8 @@ class AddQuestion extends Component {
   setOddsAgainst = (event, oddsAgainst) => {
     this.setState({...this.state, oddsAgainst: parseInt(oddsAgainst)})
   }
-  setInitalLiquidity = (event, initalLiquidity) => {
-    this.setState({...this.state, initalLiquidity: parseInt(initalLiquidity)})
+  setinitialLiquidity = (event, initialLiquidity) => {
+    this.setState({...this.state, initialLiquidity: parseInt(initialLiquidity)})
   }
   setTimeOfBetClose = (event, timeOfBetClose) => {
     this.setState({...this.state, timeOfBetClose: parseInt(timeOfBetClose)})
@@ -65,9 +65,9 @@ class AddQuestion extends Component {
     return (resolutionDeadlineTime > this.state.timeOfBetClose)? this.isGreaterThanZero(resolutionDeadlineTime, this.emptyError) : 'The resolution deadline must be after the time of bet close.'
   }
   isWinningsClaimDeadlineValid = () => {
-    const {winningsClaimDeadline, timeOfBetClose} = this.state
+    const {winningsClaimDeadline, resolutionDeadlineTime} = this.state
     if (winningsClaimDeadline == null) return ''
-    if (winningsClaimDeadline < timeOfBetClose) return 'The winnings claim deadline must be after the resolution deadline.'
+    if (winningsClaimDeadline <= resolutionDeadlineTime) return 'The winnings claim deadline must be after the resolution deadline.'
     return this.isGreaterThanZero(winningsClaimDeadline, this.emptyError)
   }
   isTrustedSourceValid = () => {
@@ -78,9 +78,11 @@ class AddQuestion extends Component {
     if (allError !== '') return // TODO:: Write a nice error message, make this more user friendly.
     // TODO:: Prevent an empty submit, and if submit show all errors (even if empty)
 
-    // TODO:: calculate the amountFor/Against using odds and `initialLiquidity`
-    const amountFor = this.state.oddsFor
-    const amountAgainst = this.state.oddsAgainst
+    const totalInRatio = this.state.oddsAgainst + this.state.oddsFor
+    const amountFor = Math.round(this.state.initialLiquidity*(this.state.oddsFor/totalInRatio))
+    const amountAgainst = Math.round(this.state.initialLiquidity*(this.state.oddsAgainst/totalInRatio))
+    // NOTE/TODO:: there are edge cases that this doesn't cater for at the moment. Lets say it is 50/50 odds, and 5 initialLiquidity, then this algoritm will take 6 wei. But at least 1 wei is not so important/significant. Most cases it will work 'good enough'.
+
     // if trusted source is empty use the admin account.
     const trustedSource = ( this.state.trustedSource === '') ? this.context.accounts[0] : this.state.trustedSource
 
@@ -104,7 +106,7 @@ class AddQuestion extends Component {
       questionStatement,
       oddsFor,
       oddsAgainst,
-      initalLiquidity,
+      initialLiquidity,
       timeOfBetClose,
       resolutionDeadlineTime,
       winningsClaimDeadline,
@@ -114,12 +116,12 @@ class AddQuestion extends Component {
     const questionStatementError = this.isQuestionStatementValid()
     const oddsForError = this.isGreaterThanZero(oddsFor, this.emptyError)
     const oddsAgainstError = this.isGreaterThanZero(oddsAgainst, this.emptyError)
-    const initalLiquidityError = this.isGreaterThanZero(initalLiquidity, this.emptyError)
+    const initialLiquidityError = this.isGreaterThanZero(initialLiquidity, this.emptyError)
     const timeOfBetCloseError = this.isGreaterThanZero(timeOfBetClose, this.emptyError)
     const resolutionDeadlineTimeError = this.isResolutionDeadlineTimeValid()
     const winningsClaimDeadlineError = this.isWinningsClaimDeadlineValid()
     const trustedSourceError = this.isTrustedSourceValid()
-    const allError = questionStatementError + oddsForError + oddsAgainstError + initalLiquidityError + timeOfBetCloseError + resolutionDeadlineTimeError + winningsClaimDeadlineError + trustedSourceError
+    const allError = questionStatementError + oddsForError + oddsAgainstError + initialLiquidityError + timeOfBetCloseError + resolutionDeadlineTimeError + winningsClaimDeadlineError + trustedSourceError
     return (
       <div>
         <h1>Add Question</h1>
@@ -151,11 +153,11 @@ class AddQuestion extends Component {
               errorText={oddsAgainstError}
             />
             <TextField
-              hintText='Initial liquidity provided.'
+              hintText='Initial liquidity provided (in Wei).'
               floatingLabelText='Total Initial Market Value'
               type='number'
-              onChange={this.setInitalLiquidity}
-              errorText={initalLiquidityError}
+              onChange={this.setinitialLiquidity}
+              errorText={initialLiquidityError}
             />
           </div><br />
           <div style={{
