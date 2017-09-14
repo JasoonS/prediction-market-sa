@@ -32,7 +32,7 @@ class AddQuestion extends Component {
   setOddsAgainst = (event, oddsAgainst) => {
     this.setState({...this.state, oddsAgainst: parseInt(oddsAgainst)})
   }
-  setinitialLiquidity = (event, initialLiquidity) => {
+  setInitialLiquidity = (event, initialLiquidity) => {
     this.setState({...this.state, initialLiquidity: parseInt(initialLiquidity)})
   }
   setTimeOfBetClose = (event, timeOfBetClose) => {
@@ -156,7 +156,7 @@ class AddQuestion extends Component {
               hintText='Initial liquidity provided (in Wei).'
               floatingLabelText='Total Initial Market Value'
               type='number'
-              onChange={this.setinitialLiquidity}
+              onChange={this.setInitialLiquidity}
               errorText={initialLiquidityError}
             />
           </div><br />
@@ -211,9 +211,7 @@ AddQuestion.contextTypes = {
 
 const mapStateToProps = state => {
   return {
-    // AddQuestion: state.AddQuestion,
-    questionDictionary: state.questionDictionary,
-    userBlabla: state.user
+    questionDictionary: state.questionDictionary
   }
 }
 

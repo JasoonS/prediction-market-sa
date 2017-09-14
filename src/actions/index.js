@@ -85,13 +85,11 @@ export const addQuestion = (
       {from: accounts[0], value: initialLiquidity, gas: 3000000}
     )
     .then((tx) => {
-      // dispatch({ type: actions.ADD_QUESTION_COMPLETE })
-      // dispatch({ type: actions.ADD_QUESTION_PENDING }) // TODO:: Do some research, do truffle contract instances return from promises only when they have been mined?
+      // dispatch({ type: actions.ADD_QUESTION_COMPLETE }) // opting to use event logs instead.
     })
     .catch(function(e) {
       // TODO:: Handle this error.
     })
-    // TODO:: listen to events to log when ADD_QUESTION_COMPLETE
   }
 }
 
@@ -100,5 +98,24 @@ export const newQuestionAdded = (predictionMarketInstance, questionObject) => {
   return {
     type: actions.NEW_QUESTION_ADDED,
     questionObject
+  }
+}
+
+export const createPosition = (predictionMarketInstance, accounts, questionId, amountFor, amountAgainst) => {
+  predictionMarketInstance.getTransactionReceiptMined = getTransactionReceiptMined // TODO:: Do this more efficiently (ie only once) at startup.
+
+  const totalStake = amountFor + amountAgainst
+  return dispatch => {
+    predictionMarketInstance.createPosition(
+      questionId,
+      [amountFor, amountAgainst],
+      {from: accounts[0], value: totalStake, gas: 3000000}
+    )
+    .then((tx) => {
+      // dispatch({ type: actions.SOMETHING_IN_THE_FUTURE_MAYBE?? }) // opting to use event logs instead.
+    })
+    .catch(function(e) {
+      // TODO:: Handle this error.
+    })
   }
 }
