@@ -15,7 +15,7 @@ contract('PredicationMarket', account => {
     defaultQuestionParams = createDefaultQuestionParams(instance)
   })
 
-  describe('Add Question', () => {
+  describe('Who can add question?', () => {
     it('should allow an administrator to create a question', async function () {
       const tx = await addQuestion(defaultQuestionParams)
 
@@ -47,29 +47,29 @@ contract('PredicationMarket', account => {
       assert.equal(q[9], false,                                        "Parameter did not match")
     })
 
-    describe('should throw if', () => {
-      it('question exists', async function () {
-        await addQuestion(defaultQuestionParams)
+    // transaction sent from nonadmin
+    it('non-administrator to create a question', async function () {
+      question = defaultQuestionParams
+      question.from = acc.nonadmin
+      return await addQuestion(question)
+      .catch(e => handleError(e))
+    })
+  })
 
-        return await addQuestion(defaultQuestionParams)
-        .catch(e => handleError(e))
-      })
+  describe('What questions can be added', () => {
+    it('should not possible to added a question that exists', async function () {
+      await addQuestion(defaultQuestionParams)
 
-      // transaction sent from nonadmin
-      it('non-administrator to create a question', async function () {
-        question = defaultQuestionParams
-        question.from = acc.nonadmin
-        return await addQuestion(question)
-        .catch(e => handleError(e))
-      })
+      return await addQuestion(defaultQuestionParams)
+      .catch(e => handleError(e))
+    })
 
-      // resolutionDeadlineTime is set to current time i.e. before timeOfBetClose
-      it('time of bet close is after resolution deadline', async function () {
-        question = defaultQuestionParams
-        question.resolutionDeadlineTime = question.timeOfBetClose - 1
-        return await addQuestion(question)
-        .catch(e => handleError(e))
-      })
+    // resolutionDeadlineTime is set to current time i.e. before timeOfBetClose
+    it('should not be posible for the time of bet close to be after resolution deadline', async function () {
+      question = defaultQuestionParams
+      question.resolutionDeadlineTime = question.timeOfBetClose - 1
+      return await addQuestion(question)
+      .catch(e => handleError(e))
     })
   })
 })
