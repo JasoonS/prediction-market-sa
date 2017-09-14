@@ -1,3 +1,6 @@
+# Built contracts
+build/contracts/*.json
+
 # Logs
 logs
 *.log
