@@ -6,6 +6,7 @@ contract PredictionMarket {
     bytes32[] public questionsList; // TODO : this list is currently append only and unscalable.
 
     event LogQuestionAdded(string questionStatement, bytes32 indexed questionId, uint inFavour, uint against, uint timeOfBetClose, uint resolutionDeadlineTime, uint winningsClaimDeadline, address trustedSource);
+    event LogPositionCreated(address indexed createdBy, bytes32 indexed questionId, uint totalInFavour, uint totalAgainst, uint positionInFavour, uint positionAgainst);
     event LogClaim(address indexed recipient, bytes32 indexed questionId, uint inFavour, uint against);
     //Todo - use safemath
 
@@ -41,29 +42,29 @@ contract PredictionMarket {
     }
 
     modifier betIsUnresolved(bytes32 questionId) {
-        require(block.timestamp < questions[questionId].timeOfBetClose);
+        require(block.number < questions[questionId].timeOfBetClose);
         _;
     }
 
     modifier betStillOpen(bytes32 questionId) {
-        require(block.timestamp < questions[questionId].timeOfBetClose);
+        require(block.number < questions[questionId].timeOfBetClose);
         _;
     }
 
     modifier isBetResolvePeriod(bytes32 questionId) {
-        require(block.timestamp > questions[questionId].timeOfBetClose);
-        require(block.timestamp < questions[questionId].resolutionDeadlineTime);
+        require(block.number > questions[questionId].timeOfBetClose);
+        require(block.number < questions[questionId].resolutionDeadlineTime);
         _;
     }
 
     modifier isClaimPeriod(bytes32 questionId) {
-        require(block.timestamp > questions[questionId].resolutionDeadlineTime);
-        require(block.timestamp < questions[questionId].winningsClaimDeadline);
+        require(block.number > questions[questionId].resolutionDeadlineTime);
+        require(block.number < questions[questionId].winningsClaimDeadline);
         _;
     }
 
     modifier claimPeriodComplete(bytes32 questionId) {
-        require(block.timestamp > questions[questionId].winningsClaimDeadline);
+        require(block.number > questions[questionId].winningsClaimDeadline);
         _;
     }
 
@@ -94,6 +95,7 @@ contract PredictionMarket {
         isAdmin
         returns(bytes32)
     {
+        require(block.number < timeOfBetClose); // the bet must stay open for some time after creation.
         require(timeOfBetClose < resolutionDeadlineTime);
         require(resolutionDeadlineTime < winningsClaimDeadline);
 
@@ -140,6 +142,8 @@ contract PredictionMarket {
         if (msg.value > initialQuestionValue) {
             msg.sender.transfer(msg.value - initialQuestionValue);
         }
+
+        LogPositionCreated(msg.sender, questionId, questions[questionId].inFavour, questions[questionId].against, questions[questionId].positions[msg.sender].inFavour, questions[questionId].positions[msg.sender].against);
     }
 
     function getPosition (bytes32 questionId, address user)
