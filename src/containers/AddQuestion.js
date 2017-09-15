@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import BlockFutureTimeTool from '../components/BlockFutureTimeTool'
+import moment from 'moment'
 var ethereum_address = require('ethereum-address')
 
 class AddQuestion extends Component {
@@ -15,11 +17,33 @@ class AddQuestion extends Component {
       oddsFor: null,
       oddsAgainst: null,
       initialLiquidity: null,
-      timeOfBetClose: null,
-      resolutionDeadlineTime: null,
-      winningsClaimDeadline: null,
-      trustedSource: ''
+      timeOfBetClose: undefined,
+      resolutionDeadlineTime: undefined,
+      winningsClaimDeadline: undefined,
+      trustedSource: '',
+
+      // for block time calculations
+      latestBlockNumber: 0,
+      timeCheckedBlockNumber: null,
+      blockTime: 24 // use an api to check this in future (ie https://etherchain.org/documentation/api/)
     }
+  }
+
+  componentDidMount() {
+    this.getCurrentBlockNumber()
+  }
+
+  getCurrentBlockNumber = () => {
+    // it optimistically gets the 'pending' block number infact
+    this.context.web3.eth.getBlock('pending', (error, result) => {
+      if (error === null) {
+        this.setState({
+          ...this.state,
+          latestBlockNumber: result.number,
+          timeCheckedBlockNumber: moment()
+        })
+      }
+    })
   }
 
   // `onChange` handlers
@@ -36,9 +60,11 @@ class AddQuestion extends Component {
     this.setState({...this.state, initialLiquidity: parseInt(initialLiquidity)})
   }
   setTimeOfBetClose = (event, timeOfBetClose) => {
+    console.log(timeOfBetClose)
+    console.log(parseInt(timeOfBetClose))
     this.setState({...this.state, timeOfBetClose: parseInt(timeOfBetClose)})
   }
-  setesolutionDeadlineTime = (event, resolutionDeadlineTime) => {
+  setResolutionDeadlineTime = (event, resolutionDeadlineTime) => {
     this.setState({...this.state, resolutionDeadlineTime: parseInt(resolutionDeadlineTime)})
   }
   setWinningsClaimDeadline = (event, winningsClaimDeadline) => {
@@ -46,6 +72,36 @@ class AddQuestion extends Component {
   }
   setTrustedSource = (event, trustedSource) => {
     this.setState({...this.state, trustedSource})
+  }
+
+  // convert from block numbers to time:
+  // TODO: This could be a really useful tool, npm library in the future? - encapsulate it nicely.
+  fromBlockToTime = blockNumber => {
+    const {
+      latestBlockNumber,
+      timeCheckedBlockNumber,
+      blockTime
+    } = this.state
+    if (timeCheckedBlockNumber == undefined) return moment()
+
+    let newMoment = timeCheckedBlockNumber.clone()
+    console.log('BET Close', blockNumber)
+    console.log('getting block time', newMoment.add(blockTime*(blockNumber-latestBlockNumber), 'seconds').fromNow())
+    console.log('getting block time 5000', newMoment.add(5000, 'seconds').fromNow())
+    return newMoment.add(blockTime*(blockNumber-latestBlockNumber)).clone()
+  }
+
+  fromTimeToBlock = time => {
+    const {
+      latestBlockNumber,
+      timeCheckedBlockNumber,
+      blockTime
+    } = this.state
+    console.log('blocktime', time, latestBlockNumber,
+    timeCheckedBlockNumber,
+    blockTime)
+    var duration = moment.duration(time.diff(timeCheckedBlockNumber));
+    return duration.seconds()
   }
 
   // input validition handlers
@@ -160,32 +216,51 @@ class AddQuestion extends Component {
               errorText={initialLiquidityError}
             />
           </div><br />
+          <p>Use these data/time pickers to help you select which block numbers you want to use for your application. Give yourself comfortable leway since these are only approximations, blocktimes vary.</p>
           <div style={{
             flex: 1,
             flexDirection: 'row',
             justifyContent: 'space-between'
           }}>
-            <TextField
-              hintText='Enter a block number.'
-              floatingLabelText='Time of Bet Close'
-              type='number'
-              onChange={this.setTimeOfBetClose}
-              errorText={timeOfBetCloseError}
-            />
-            <TextField
-              hintText='Enter a block number.'
-              floatingLabelText='Resolution Deadline'
-              type='number'
-              onChange={this.setesolutionDeadlineTime}
-              errorText={resolutionDeadlineTimeError}
-            />
-            <TextField
-              hintText='Enter a block number.'
-              floatingLabelText='Winnings Claim Deadline'
-              type='number'
-              onChange={this.setWinningsClaimDeadline}
-              errorText={winningsClaimDeadlineError}
-            />
+          </div><br />
+          <div style={{
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+            <span>
+              <TextField
+                hintText='Enter a block number.'
+                floatingLabelText='Time of Bet Close'
+                type='number'
+                onChange={this.setTimeOfBetClose}
+                value={timeOfBetClose}
+                errorText={timeOfBetCloseError}
+              />
+              <BlockFutureTimeTool btnLabel='Set Using Clock' time={this.fromBlockToTime(timeOfBetClose)} returnTime={time => this.setTimeOfBetClose(null, this.fromTimeToBlock(time))}/>
+            </span>
+            <span>
+              <TextField
+                hintText='Enter a block number.'
+                floatingLabelText='Resolution Deadline'
+                type='number'
+                onChange={this.setResolutionDeadlineTime}
+                value={resolutionDeadlineTime}
+                errorText={resolutionDeadlineTimeError}
+              />
+              <BlockFutureTimeTool btnLabel='Set Using Clock' time={this.fromBlockToTime(resolutionDeadlineTime)} returnTime={time => this.setResolutionDeadlineTime(null, this.fromTimeToBlock(time))}/>
+            </span>
+            <span>
+              <TextField
+                hintText='Enter a block number.'
+                floatingLabelText='Winnings Claim Deadline'
+                type='number'
+                onChange={this.setWinningsClaimDeadline}
+                value={winningsClaimDeadline}
+                errorText={winningsClaimDeadlineError}
+              />
+              <BlockFutureTimeTool btnLabel='Set Using Clock' time={this.fromBlockToTime(winningsClaimDeadline)} returnTime={time => this.setWinningsClaimDeadline(null, this.fromTimeToBlock(time))}/>
+            </span>
           </div><br />
           {/*TODO:: use `npm install ethereum-address` later to test*/}
           <TextField
