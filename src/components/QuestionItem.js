@@ -3,6 +3,8 @@ import {Card, CardHeader, CardText} from 'material-ui/Card'
 import AddPosition from './AddPosition'
 import QuestionResult from './QuestionResult'
 import ResolveQuestion from './ResolveQuestion'
+import Withdraw from './Withdraw'
+import Archived from './Archived'
 
 export default class QuestionItem extends React.Component {
   constructor(props) {
@@ -34,7 +36,8 @@ export default class QuestionItem extends React.Component {
       statement,
       trustedSource,
       result,
-      resolutionDeadlineTime
+      resolutionDeadlineTime,
+      winningsClaimDeadline
     } = this.props.questionData
     const messageSubtitle = "For " + 1 + " against " + 2 + "."
     const message = JSON.stringify(this.props.questionData, null, 2)
@@ -58,6 +61,8 @@ export default class QuestionItem extends React.Component {
           {openOnly(<AddPosition/>)}
           {unresolvedOnly(<ResolveQuestion questionId={questionId} trustedSource={trustedSource}/>)}
           {resolvedOnly(<QuestionResult result={result} resolutionDeadlineTime={resolutionDeadlineTime}/>)}
+          {withdrawlOnly(<Withdraw result={result} winningsClaimDeadline={winningsClaimDeadline}/>)}
+          {archivedOnly(<Archived result={result} winningsClaimDeadline={winningsClaimDeadline}/>)}
           <pre>{message}</pre>
         </CardText>
       </Card>
