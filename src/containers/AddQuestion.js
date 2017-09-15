@@ -24,12 +24,13 @@ class AddQuestion extends Component {
 
       // for block time calculations
       latestBlockNumber: 0,
-      timeCheckedBlockNumber: null,
+      timeCheckedBlockNumber: moment(),
       blockTime: 24 // use an api to check this in future (ie https://etherchain.org/documentation/api/)
     }
   }
 
   componentDidMount() {
+    console.log('component did mount')
     this.getCurrentBlockNumber()
   }
 
@@ -42,6 +43,7 @@ class AddQuestion extends Component {
           latestBlockNumber: result.number,
           timeCheckedBlockNumber: moment()
         })
+        console.log('set the state')
       }
     })
   }
@@ -85,9 +87,7 @@ class AddQuestion extends Component {
     if (timeCheckedBlockNumber == undefined) return moment()
 
     let newMoment = timeCheckedBlockNumber.clone()
-    console.log('BET Close', blockNumber)
-    console.log('getting block time', newMoment.add(blockTime*(blockNumber-latestBlockNumber), 'seconds').fromNow())
-    console.log('getting block time 5000', newMoment.add(5000, 'seconds').fromNow())
+
     return newMoment.add(blockTime*(blockNumber-latestBlockNumber)).clone()
   }
 
@@ -97,11 +97,9 @@ class AddQuestion extends Component {
       timeCheckedBlockNumber,
       blockTime
     } = this.state
-    console.log('blocktime', time, latestBlockNumber,
-    timeCheckedBlockNumber,
-    blockTime)
-    var duration = moment.duration(time.diff(timeCheckedBlockNumber));
-    return duration.seconds()
+
+    var duration = moment.duration(time.diff(timeCheckedBlockNumber))
+    return (duration.days()*(24*60*60)+duration.hours()*(60*60)+(duration.minutes()*60)+duration.seconds())/blockTime // TODO:: Test this maths thorougly, I think it might have errors.
   }
 
   // input validition handlers
@@ -166,7 +164,8 @@ class AddQuestion extends Component {
       timeOfBetClose,
       resolutionDeadlineTime,
       winningsClaimDeadline,
-      trustedSource
+      trustedSource,
+      latestBlockNumber
     } = this.state
 
     const questionStatementError = this.isQuestionStatementValid()
@@ -178,6 +177,13 @@ class AddQuestion extends Component {
     const winningsClaimDeadlineError = this.isWinningsClaimDeadlineValid()
     const trustedSourceError = this.isTrustedSourceValid()
     const allError = questionStatementError + oddsForError + oddsAgainstError + initialLiquidityError + timeOfBetCloseError + resolutionDeadlineTimeError + winningsClaimDeadlineError + trustedSourceError
+
+    // const info = () => (
+    //   <div>
+    //
+    //   </div>
+    // )
+
     return (
       <div>
         <h1>Add Question</h1>
@@ -217,12 +223,7 @@ class AddQuestion extends Component {
             />
           </div><br />
           <p>Use these data/time pickers to help you select which block numbers you want to use for your application. Give yourself comfortable leway since these are only approximations, blocktimes vary.</p>
-          <div style={{
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'space-between'
-          }}>
-          </div><br />
+          <p>The current block on load is: {latestBlockNumber}</p>
           <div style={{
             flex: 1,
             flexDirection: 'row',
