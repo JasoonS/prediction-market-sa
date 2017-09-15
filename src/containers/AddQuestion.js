@@ -30,10 +30,10 @@ class AddQuestion extends Component {
   }
 
   componentDidMount() {
-    console.log('component did mount')
     this.getCurrentBlockNumber()
   }
 
+  // TODO:: Put this into a utility folder, used by a few different components.
   getCurrentBlockNumber = () => {
     // it optimistically gets the 'pending' block number infact
     this.context.web3.eth.getBlock('pending', (error, result) => {
@@ -43,7 +43,6 @@ class AddQuestion extends Component {
           latestBlockNumber: result.number,
           timeCheckedBlockNumber: moment()
         })
-        console.log('set the state')
       }
     })
   }

@@ -52,6 +52,7 @@
     "dotenv": "^2.0.0",
     "ethereum-address": "0.0.4",
     "material-ui": "^0.19.1",
+    "moment": "^2.18.1",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.6",

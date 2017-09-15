@@ -45,9 +45,9 @@ const reducer = (state = initialState, action) => {
        }
       }
     case actions.NEW_QUESTION_ADDED:
-      console.log('from event', action.questionObject)
+      // console.log('NEW_QUESTION_ADDED: from event', action.questionObject)
       // prevent duplicate items in your array.
-      const questionArray = (state.questionArray.indexOf(action.questionObject.questionId) > 0)?
+      const questionArray = (state.questionArray.indexOf(action.questionObject.questionId) >= 0)?
         state.questionArray : [...state.questionArray, action.questionObject.questionId]
 
       const questienDetails = {
