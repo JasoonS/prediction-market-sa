@@ -2,6 +2,7 @@ import React from 'react'
 import {Card, CardHeader, CardText} from 'material-ui/Card'
 import AddPosition from './AddPosition'
 import QuestionResult from './QuestionResult'
+import ResolveQuestion from './ResolveQuestion'
 
 export default class QuestionItem extends React.Component {
   constructor(props) {
@@ -30,11 +31,13 @@ export default class QuestionItem extends React.Component {
   render() {
     const {
       questionId,
-      statement
+      statement,
+      trustedSource,
+      result,
+      resolutionDeadlineTime
     } = this.props.questionData
     const messageSubtitle = "For " + 1 + " against " + 2 + "."
     const message = JSON.stringify(this.props.questionData, null, 2)
-
 
     const openOnly = component => ('open' === this.props.questionState) ? component : null
     const unresolvedOnly = component => ('unresolved' === this.props.questionState) ? component : null
@@ -53,7 +56,8 @@ export default class QuestionItem extends React.Component {
         />
         <CardText expandable={true}>
           {openOnly(<AddPosition/>)}
-          {resolvedOnly(<QuestionResult/>)}
+          {unresolvedOnly(<ResolveQuestion questionId={questionId} trustedSource={trustedSource}/>)}
+          {resolvedOnly(<QuestionResult result={result} resolutionDeadlineTime={resolutionDeadlineTime}/>)}
           <pre>{message}</pre>
         </CardText>
       </Card>

@@ -9,6 +9,8 @@ export const actions = {
   NEW_QUESTION_ADDED: 'NEW_QUESTION_ADDED'
 }
 
+//TODO:: Set better gas limits on these functions so I don't wait peoples money in failing transactions.
+
 //TODO:: Add a function that easily curries all of these actions to include `(predictionMarketInstance, accounts)`.
 
 export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
@@ -24,6 +26,8 @@ export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
         winningsClaimDeadline: questionDetailsArray[5],
         trustedSource: questionDetailsArray[6],
         resolved: questionDetailsArray[8],
+        moneyInPot: questionDetailsArray[9],
+        result: questionDetailsArray[10]
         // TODO:: add more relevant question details.
       }
       dispatch({
@@ -102,14 +106,28 @@ export const newQuestionAdded = (predictionMarketInstance, questionObject) => {
 }
 
 export const createPosition = (predictionMarketInstance, accounts, questionId, amountFor, amountAgainst) => {
-  predictionMarketInstance.getTransactionReceiptMined = getTransactionReceiptMined // TODO:: Do this more efficiently (ie only once) at startup.
-
   const totalStake = amountFor + amountAgainst
   return dispatch => {
     predictionMarketInstance.createPosition(
       questionId,
       [amountFor, amountAgainst],
       {from: accounts[0], value: totalStake, gas: 3000000}
+    )
+    .then((tx) => {
+      // dispatch({ type: actions.SOMETHING_IN_THE_FUTURE_MAYBE?? }) // opting to use event logs instead.
+    })
+    .catch(function(e) {
+      // TODO:: Handle this error.
+    })
+  }
+}
+
+export const closeBet = (predictionMarketInstance, accounts, questionId, result) => {
+  return dispatch => {
+    predictionMarketInstance.closeBet(
+      questionId,
+      result,
+      {from: accounts[0],gas: 3000000}
     )
     .then((tx) => {
       // dispatch({ type: actions.SOMETHING_IN_THE_FUTURE_MAYBE?? }) // opting to use event logs instead.

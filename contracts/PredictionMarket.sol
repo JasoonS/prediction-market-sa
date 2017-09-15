@@ -42,7 +42,7 @@ contract PredictionMarket {
     }
 
     modifier betIsUnresolved(bytes32 questionId) {
-        require(block.number < questions[questionId].timeOfBetClose);
+        require(!questions[questionId].resolved);
         _;
     }
 
@@ -53,13 +53,13 @@ contract PredictionMarket {
 
     modifier isBetResolvePeriod(bytes32 questionId) {
         require(block.number > questions[questionId].timeOfBetClose);
-        require(block.number < questions[questionId].resolutionDeadlineTime);
+        require(block.number <= questions[questionId].resolutionDeadlineTime);
         _;
     }
 
     modifier isClaimPeriod(bytes32 questionId) {
         require(block.number > questions[questionId].resolutionDeadlineTime);
-        require(block.number < questions[questionId].winningsClaimDeadline);
+        require(block.number <= questions[questionId].winningsClaimDeadline);
         _;
     }
 

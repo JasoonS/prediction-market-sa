@@ -46,9 +46,7 @@ const reducer = (state = initialState, action) => {
       }
     case actions.NEW_QUESTION_ADDED:
       // console.log('NEW_QUESTION_ADDED: from event', action.questionObject)
-      // prevent duplicate items in your array.
-      const questionArray = (state.questionArray.indexOf(action.questionObject.questionId) >= 0)?
-        state.questionArray : [...state.questionArray, action.questionObject.questionId]
+      const questionArray = [...state.questionArray, action.questionObject.questionId]
 
       const questienDetails = {
         statement: action.questionObject.questionStatement,
@@ -59,16 +57,22 @@ const reducer = (state = initialState, action) => {
         resolutionDeadlineTime: action.questionObject.resolutionDeadlineTime,
         winningsClaimDeadline: action.questionObject.winningsClaimDeadline,
         trustedSource: action.questionObject.trustedSource,
+        moneyInPot: action.questionObject.inFavour + action.questionObject.against,
+        result: false,
         resolved: false
       }
-      return {
-        ...state,
-        questionArray,
-        questionDictionary : {
-          ...state.questionDictionary,
-          [action.questionObject.questionId] : questienDetails
+
+      // prevent duplicate items in your state
+      return (state.questionArray.indexOf(action.questionObject.questionId) >= 0)?
+        state :
+        {
+          ...state,
+          questionArray,
+          questionDictionary : {
+            ...state.questionDictionary,
+            [action.questionObject.questionId] : questienDetails
+          }
         }
-      }
     default:
       return state
   }
