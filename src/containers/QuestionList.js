@@ -100,11 +100,10 @@ class QuestionArray extends Component {
     } = this.props
 
     const listItems = questionArray.map(
-      (item, index) =>{
-        console.log(this.getQuestionState(questionDictionary[item]))
+      (item, index) => {
         const qState = this.getQuestionState(questionDictionary[item])
         return this.shouldQuestionShow(qState)?
-          <QuestionItem key={index} questionData={questionDictionary[item]}/> :
+          <QuestionItem key={index} questionData={questionDictionary[item]} questionState={qState}/> :
           null
       }
     )

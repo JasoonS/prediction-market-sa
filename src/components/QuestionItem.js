@@ -1,7 +1,7 @@
 import React from 'react'
 import {Card, CardHeader, CardText} from 'material-ui/Card'
-import { VisibleOnlyActiveQ } from '../utils/wrappers.js'
 import AddPosition from './AddPosition'
+import QuestionResult from './QuestionResult'
 
 export default class QuestionItem extends React.Component {
   constructor(props) {
@@ -35,7 +35,12 @@ export default class QuestionItem extends React.Component {
     const messageSubtitle = "For " + 1 + " against " + 2 + "."
     const message = JSON.stringify(this.props.questionData, null, 2)
 
-    const AddPositionOnlyActiveQ = VisibleOnlyActiveQ(questionId)(() => <AddPosition/>)
+
+    const openOnly = component => ('open' === this.props.questionState) ? component : null
+    const unresolvedOnly = component => ('unresolved' === this.props.questionState) ? component : null
+    const resolvedOnly = component => ('resolved' === this.props.questionState) ? component : null
+    const withdrawlOnly = component => ('withdrawl' === this.props.questionState) ? component : null
+    const archivedOnly = component => ('archived' === this.props.questionState) ? component : null
 
     return (
       <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
@@ -47,7 +52,8 @@ export default class QuestionItem extends React.Component {
           showExpandableButton={true}
         />
         <CardText expandable={true}>
-          <AddPositionOnlyActiveQ/>
+          {openOnly(<AddPosition/>)}
+          {resolvedOnly(<QuestionResult/>)}
           <pre>{message}</pre>
         </CardText>
       </Card>
