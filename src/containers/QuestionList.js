@@ -59,6 +59,40 @@ class QuestionArray extends Component {
     this.setState({...this.state, archived})
   }
 
+  getQuestionState = ({timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, resolved}) => {
+    const {latestBlockNumber} = this.state
+    if (timeOfBetClose == null) return 'unclasified' // should really check for resolutionDeadlineTime, winningsClaimDeadline also (but not a big issue since they should all be set together)
+
+    if (timeOfBetClose.greaterThan(latestBlockNumber))
+      return 'open'
+    else if (resolutionDeadlineTime.greaterThan(latestBlockNumber))
+      if (resolved)
+        return 'resolved'
+      else
+        return 'unresolved'
+    else if (winningsClaimDeadline.greaterThan(latestBlockNumber))
+      return 'withdrawl'
+    else
+      return 'archived'
+  }
+
+  shouldQuestionShow = questionState => {
+    switch (questionState){
+      case 'open':
+        return this.state.openToBet
+      case 'unresolved':
+        return this.state.closedButUnresolved
+      case 'resolved':
+        return this.state.resolved
+      case 'withdrawl':
+        return this.state.openToWidrawl
+      case 'archived':
+        return this.state.archived
+      default:
+        return false
+    }
+  }
+
   render() {
     const {
       questionArray,
@@ -66,8 +100,13 @@ class QuestionArray extends Component {
     } = this.props
 
     const listItems = questionArray.map(
-      (item, index) =>
-        <QuestionItem key={index} questionData={questionDictionary[item]}/>
+      (item, index) =>{
+        console.log(this.getQuestionState(questionDictionary[item]))
+        const qState = this.getQuestionState(questionDictionary[item])
+        return this.shouldQuestionShow(qState)?
+          <QuestionItem key={index} questionData={questionDictionary[item]}/> :
+          null
+      }
     )
 
     return (
