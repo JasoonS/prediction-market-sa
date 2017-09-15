@@ -1,7 +1,7 @@
 const acc = web3.eth.accounts
-const admin = acc[1]
-const trusted = acc[2]
-const nonadmin = acc[3]
+const admin = acc[0]
+const trusted = acc[1]
+const nonadmin = acc[2]
 
 module.exports = {
   addQuestion: function ({instance, question, initialPosition, trustedSource, timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, from, value, gas}) {
@@ -12,9 +12,14 @@ module.exports = {
   },
 
   handleError: function (e) {
-    if ((e + '').indexOf('invalid JUMP') || (e + '').indexOf('out of gas') || (e + '').indexOf('invalid opcode') > -1) {} else if ((e + '').indexOf('please check your gas amount') > -1) {} else {
+    if ((e + '').indexOf('invalid JUMP') ||
+        (e + '').indexOf('out of gas') || 
+        (e + '').indexOf('invalid opcode') > -1) {}
+    else if ((e + '').indexOf('please check your gas amount') > -1) {}
+    else {
       throw e
     }
+    return false
   },
 
   accounts: function () {

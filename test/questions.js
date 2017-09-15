@@ -1,5 +1,7 @@
 const PredictionMarket = artifacts.require('./PredictionMarket.sol')
 const helpers = require('./helpers')
+const sha3 = require('js-sha3')
+const keccak = sha3.keccak256
 
 const addQuestion = helpers.addQuestion
 const handleError = helpers.handleError
@@ -19,7 +21,7 @@ contract('PredicationMarket', account => {
     it('should allow an administrator to create a question', async function () {
       const tx = await addQuestion(defaultQuestionParams)
 
-      questionHash = web3.sha3(defaultQuestionParams.question)
+      questionHash = "0x"+keccak(defaultQuestionParams.question)
 
       args = tx.logs[0].args
       assert.equal(args.questionStatement,                 defaultQuestionParams.question,               "Parameter did not match")
@@ -31,7 +33,6 @@ contract('PredicationMarket', account => {
       assert.equal(args.winningsClaimDeadline.toString(),  defaultQuestionParams.winningsClaimDeadline,  "Parameter did not match")
       assert.equal(args.trustedSource,                     defaultQuestionParams.trustedSource,          "Parameter did not match")
 
-      questionHash = web3.sha3(defaultQuestionParams.question)
       let q = await instance.questions(questionHash)
 
       assert.equal(q[0], defaultQuestionParams.question,               "Parameter did not match")
@@ -48,28 +49,39 @@ contract('PredicationMarket', account => {
     })
 
     // transaction sent from nonadmin
-    it('non-administrator to create a question', async function () {
+    it('should not allow a non-administrator to create a question', async function () {
       question = defaultQuestionParams
       question.from = acc.nonadmin
+
       return await addQuestion(question)
-      .catch(e => handleError(e))
+      .then(() => {
+        assert(false, "Expected contract call to fail") 
+      })
+      .catch(e => {})
     })
   })
 
   describe('What questions can be added', () => {
-    it('should not possible to added a question that exists', async function () {
+    it('should not be possible to add a question that exists', async function () {
       await addQuestion(defaultQuestionParams)
 
       return await addQuestion(defaultQuestionParams)
-      .catch(e => handleError(e))
+      .then(() => {
+        assert(false, "Expected contract call to fail") 
+      })
+      .catch(e => {})
     })
-
+      
     // resolutionDeadlineTime is set to current time i.e. before timeOfBetClose
     it('should not be posible for the time of bet close to be after resolution deadline', async function () {
       question = defaultQuestionParams
       question.resolutionDeadlineTime = question.timeOfBetClose - 1
+
       return await addQuestion(question)
-      .catch(e => handleError(e))
+      .then(() => {
+        assert(false, "Expected contract call to fail") 
+      })
+      .catch(e => {})
     })
   })
 })
