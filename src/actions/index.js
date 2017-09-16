@@ -6,7 +6,8 @@ export const actions = {
   ADD_QUESTION_PENDING: 'ADD_QUESTION_PENDING', // TODO:: unimplemented in reducer, add later for better UX.
   ADD_QUESTION_COMPLETE: 'ADD_QUESTION_COMPLETE', // TODO:: unimplemented in reducer, add later for better UX.
   SAVE_ADMIN: 'SAVE_ADMIN',
-  NEW_QUESTION_ADDED: 'NEW_QUESTION_ADDED'
+  NEW_QUESTION_ADDED: 'NEW_QUESTION_ADDED',
+  UPDATE_POSITIONS: 'UPDATE_POSITIONS'
 }
 
 //TODO:: Set better gas limits on these functions so I don't wait peoples money in failing transactions.
@@ -27,9 +28,12 @@ export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
         trustedSource: questionDetailsArray[6],
         resolved: questionDetailsArray[8],
         moneyInPot: questionDetailsArray[9],
-        result: questionDetailsArray[10]
+        result: questionDetailsArray[10],
+        userInFavour: 0,
+        userAgainst: 0
         // TODO:: add more relevant question details.
       }
+      // TODO:: Add a call here that gets and sets the users possition in state for this question.
       dispatch({
         type: actions.SAVE_QUESTION_DETAILS,
         questionId,
@@ -98,20 +102,14 @@ export const addQuestion = (
 }
 
 // this is currently very simple, since only admin exists, could have more complexity when different user roles emerge
-export const newQuestionAdded = (predictionMarketInstance, questionObject) => {
-  return {
-    type: actions.NEW_QUESTION_ADDED,
-    questionObject
-  }
-}
+export const newQuestionAdded = (predictionMarketInstance, questionObject) => {{
+  type: actions.NEW_QUESTION_ADDED,
+  questionObject
+}}
 
 export const createPosition = (predictionMarketInstance, accounts, questionId, amountFor, amountAgainst) => {
   const totalStake = amountFor + amountAgainst
-  console.log(
-    questionId,
-    [amountFor, amountAgainst],
-    {from: accounts[0], value: totalStake, gas: 3000000}
-  )
+
   return dispatch => {
     predictionMarketInstance.createPosition(
       questionId,
@@ -126,6 +124,11 @@ export const createPosition = (predictionMarketInstance, accounts, questionId, a
     })
   }
 }
+
+export const updateQuestionPossitions = (predictionMarketInstance, positionObject) => ({
+    type: actions.UPDATE_POSITIONS,
+    positionObject
+})
 
 export const closeBet = (predictionMarketInstance, accounts, questionId, result) => {
   return dispatch => {

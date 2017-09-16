@@ -40,10 +40,6 @@ class AddPosition extends Component {
     const amountAgainst = Math.round(this.state.amountToStake*(this.state.oddsAgainst/totalInRatio))
     // NOTE/TODO:: there are edge cases that this doesn't cater for at the moment. Lets say it is 50/50 odds, and 5 amountToStake, then this algoritm will take 6 wei. But at least 1 wei is not so important/significant. Most cases it will work 'good enough'.
 
-    console.log('incomponent', this.context.predMarketInstance,
-    this.context.accounts,
-    amountFor,
-    amountAgainst)
     this.props.dispatch(
       createPosition(
         this.context.predMarketInstance,

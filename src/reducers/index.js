@@ -40,39 +40,58 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         questionDictionary : {
-           ...state.questionDictionary,
-           [action.questionId] : action.questionDetails
-       }
+          ...state.questionDictionary,
+          [action.questionId] : action.questionDetails
+        }
       }
     case actions.NEW_QUESTION_ADDED:
-      // console.log('NEW_QUESTION_ADDED: from event', action.questionObject)
-      const questionArray = [...state.questionArray, action.questionObject.questionId]
+    const questionArray = [...state.questionArray, action.questionObject.questionId]
 
-      const questienDetails = {
-        statement: action.questionObject.questionStatement,
-        questionId: action.questionObject.questionId,
-        inFavour: action.questionObject.inFavour,
-        against: action.questionObject.against,
-        timeOfBetClose: action.questionObject.timeOfBetClose,
-        resolutionDeadlineTime: action.questionObject.resolutionDeadlineTime,
-        winningsClaimDeadline: action.questionObject.winningsClaimDeadline,
-        trustedSource: action.questionObject.trustedSource,
-        moneyInPot: action.questionObject.inFavour + action.questionObject.against,
-        result: false,
-        resolved: false
+    const questienDetails = {
+      statement: action.questionObject.questionStatement,
+      questionId: action.questionObject.questionId,
+      inFavour: action.questionObject.inFavour,
+      against: action.questionObject.against,
+      timeOfBetClose: action.questionObject.timeOfBetClose,
+      resolutionDeadlineTime: action.questionObject.resolutionDeadlineTime,
+      winningsClaimDeadline: action.questionObject.winningsClaimDeadline,
+      trustedSource: action.questionObject.trustedSource,
+      moneyInPot: action.questionObject.inFavour + action.questionObject.against,
+      userInFavour: state.user.isAdmin? action.questionObject.inFavour : 0,
+      userAgainst: state.user.isAdmin? action.questionObject.against : 0,
+      result: false,
+      resolved: false
+    }
+
+    // prevent duplicate items in your state
+    return (state.questionArray.indexOf(action.questionObject.questionId) >= 0)?
+      state :
+      {
+        ...state,
+        questionArray,
+        questionDictionary : {
+          ...state.questionDictionary,
+          [action.questionObject.questionId] : questienDetails
+        }
       }
 
-      // prevent duplicate items in your state
-      return (state.questionArray.indexOf(action.questionObject.questionId) >= 0)?
-        state :
-        {
-          ...state,
-          questionArray,
-          questionDictionary : {
-            ...state.questionDictionary,
-            [action.questionObject.questionId] : questienDetails
-          }
+    case actions.UPDATE_POSITIONS:
+      // TODO:: Check that the question is already in `questionArray`, shouldn't ever happen, so not too important.
+      const questionDetails = {
+        ...state.questionDictionary[action.positionObject.questionId],
+        inFavour: action.positionObject.totalInFavour,
+        against: action.positionObject.totalAgainst,
+        userInFavour: action.positionObject.positionInFavour,
+        userAgainst: action.positionObject.positionAgainst,
+      }
+
+      return {
+        ...state,
+        questionDictionary : {
+          ...state.questionDictionary,
+          [action.positionObject.questionId] : questionDetails
         }
+      }
     default:
       return state
   }

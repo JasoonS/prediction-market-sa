@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react'
 import getInstance from './utils/getInstance'
 import { loadQuestionInfoById } from './actions'
 import { connect } from 'react-redux'
-import { newQuestionAdded } from './actions'
+import { newQuestionAdded, updateQuestionPossitions } from './actions'
 
 class InstanceWrapper extends Component {
   constructor(props) {
@@ -29,8 +29,13 @@ class InstanceWrapper extends Component {
 
       // set up listeners on the contract.
       result.predictionMarketInstance.LogQuestionAdded().watch ( (err, response) => {
-        console.log('event logged:', response.args)
+        console.log('EVENT LOG(LogQuestionAdded):', response.args)
         this.props.dispatch(newQuestionAdded(result.predictionMarketInstance, response.args))
+      })
+
+      result.predictionMarketInstance.LogPositionCreated().watch ((err, response) => {
+        console.log('EVENT LOG(LogPositionCreated):', response.args)
+        this.props.dispatch(updateQuestionPossitions(result.predictionMarketInstance, response.args))
       })
     })
   }
