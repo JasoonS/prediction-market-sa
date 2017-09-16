@@ -3,10 +3,10 @@ const admin = acc[0]
 const trusted = acc[1]
 const nonadmin = acc[2]
 
-module.exports = {
-  addQuestion: function ({instance, question, initialPosition, trustedSource, timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline, from, value, gas}) {
+var helpers = module.exports = {
+  addQuestion: function ({instance, question, initialPosition, trustedSource, timeOfBetClose, resolvePeriod, claimPeriod, from, value, gas}) {
     return instance.addQuestion(
-      question, initialPosition, trustedSource, timeOfBetClose, resolutionDeadlineTime, winningsClaimDeadline,
+      question, initialPosition, trustedSource, timeOfBetClose, timeOfBetClose+resolvePeriod, timeOfBetClose+resolvePeriod+claimPeriod,
       {from: from, value: 3, gas: 3000000}
     )
   },
@@ -22,6 +22,24 @@ module.exports = {
     return false
   },
 
+  assertJump: (error, message = '') => {
+    assert.isAbove(error.message.search('invalid'), -1, message + ': error must be returned');
+  },
+
+  assertThrow: async (callback, message = '') => {
+    var error;
+    try {
+      await callback();
+    } catch (err) {
+      error = err;
+    }
+
+    if (message === undefined) message = 'Error need to be thrown'
+
+    if (error) helpers.assertJump(error, message);
+    else  assert.notEqual(error, undefined, message);
+  },
+
   accounts: function () {
     return {admin, trusted, nonadmin}
   },
@@ -34,9 +52,9 @@ module.exports = {
     question = 'Who will win the World Cup?'
     initialPosition = [1, 2]
     trustedSource = trusted
-    timeOfBetClose = now + 10 * 60 * 1000
-    resolutionDeadlineTime = now + 20 * 60 * 1000
-    winningsClaimDeadline = now + 30 * 60 * 1000
+    timeOfBetClose = web3.eth.blockNumber + 10
+    resolvePeriod = 20
+    claimPeriod = 30
 
     value = 3
     gas = 3000000
@@ -47,11 +65,15 @@ module.exports = {
       initialPosition,
       trustedSource,
       timeOfBetClose,
-      resolutionDeadlineTime,
-      winningsClaimDeadline,
+      resolvePeriod,
+      claimPeriod,
       from,
       value,
       gas
     }
+  },
+
+  getCurrentBlockNumber: function () {
+    return web3.eth.blockNumber
   }
 }
