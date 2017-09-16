@@ -53,6 +53,17 @@ contract('PredictionMarket', account => {
 	})
 
 	it('Should return excess funds if ether sent exceeds value of bet', async () => {
+		beforeBal = web3.eth.getBalance(acc.admin)
+
+		tx = await addQuestion(defaultQuestionParams)
+
+		totalBet  = defaultQuestionParams.initialPosition[0].plus(defaultQuestionParams.initialPosition[1])
+		gasPrice  = web3.toBigNumber(defaultQuestionParams.gasPrice)
+		txFee     = gasPrice.times(tx.receipt.gasUsed)	
+		totalCost = txFee.plus(totalBet)
+		afterBal  = web3.eth.getBalance(acc.admin)
+
+		assert(afterBal.minus(beforeBal.minus(totalCost)).toString(), 0, 'Funds were not returned')
 	})
 
 	it('Should not allot bets to be closed prematurely.', async () => {
