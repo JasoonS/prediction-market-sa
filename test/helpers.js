@@ -4,10 +4,10 @@ const trusted = acc[1]
 const nonadmin = acc[2]
 
 var helpers = module.exports = {
-  addQuestion: function ({instance, question, initialPosition, trustedSource, timeOfBetClose, resolvePeriod, claimPeriod, from, value, gas}) {
+  addQuestion: function ({instance, question, initialPosition, trustedSource, timeOfBetClose, resolvePeriod, claimPeriod, from, value, gas, gasPrice}) {
     return instance.addQuestion(
       question, initialPosition, trustedSource, timeOfBetClose, timeOfBetClose+resolvePeriod, timeOfBetClose+resolvePeriod+claimPeriod,
-      {from: from, value: 3, gas: 3000000}
+      {from, value, gas, gasPrice}
     )
   },
 
@@ -45,19 +45,20 @@ var helpers = module.exports = {
   },
 
   createDefaultQuestionParams: function (instance) {
-    now = Date.now()
-
     from = admin
 
     question = 'Who will win the World Cup?'
-    initialPosition = [1, 2]
+    initialPosition = [web3.toBigNumber(web3.toWei(1, 'ether')), 
+                       web3.toBigNumber(web3.toWei(2, 'ether'))]
     trustedSource = trusted
     timeOfBetClose = web3.eth.blockNumber + 10
     resolvePeriod = 20
     claimPeriod = 30
 
-    value = 3
+    value = web3.toBigNumber(web3.toWei(4, 'ether'))
+
     gas = 3000000
+    gasPrice = 1
 
     return {
       instance,
@@ -69,7 +70,8 @@ var helpers = module.exports = {
       claimPeriod,
       from,
       value,
-      gas
+      gas,
+      gasPrice
     }
   },
 
