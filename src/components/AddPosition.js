@@ -26,11 +26,15 @@ class AddPosition extends Component {
     this.setState({...this.state, amountToStake: parseInt(amountToStake)})
   }
 
-  // TODO:: Add input checking to make sure odds are not negative
+  emptyError = (e) => {
+    return ''
+  }
 
-  submitCreateQuestionRequest = allError => {
-    // TODO:: do some imput validation.
+  isGreaterThanZero = (value, elseTest) => {
+    return (value == null) ? elseTest(value) : ((value > 0)? elseTest(value) : 'This value must be greater than Zero.')
+  }
 
+  submitCreatePositionRequest = allError => {
     const totalInRatio = this.state.oddsAgainst + this.state.oddsFor
     const amountFor = Math.round(this.state.amountToStake*(this.state.oddsFor/totalInRatio))
     const amountAgainst = Math.round(this.state.amountToStake*(this.state.oddsAgainst/totalInRatio))
@@ -52,6 +56,17 @@ class AddPosition extends Component {
   }
 
   render() {
+    const {
+      oddsFor,
+      oddsAgainst,
+      amountToStake
+    } = this.state
+
+    const oddsForError = this.isGreaterThanZero(oddsFor, this.emptyError)
+    const oddsAgainstError = this.isGreaterThanZero(oddsAgainst, this.emptyError)
+    const amountToStakeError = this.isGreaterThanZero(amountToStake, this.emptyError)
+    const allError = oddsForError + oddsAgainstError + amountToStakeError
+
     return (
       <div>
         <h3>Create Position</h3>
@@ -65,20 +80,26 @@ class AddPosition extends Component {
             floatingLabelText='Enter your Odds For'
             type='number'
             onChange={this.setOddsFor}
+            value={oddsFor}
+            errorText={oddsForError}
           />
           <TextField
             hintText='Ratio against.'
             floatingLabelText='Enter your Odds Against'
             type='number'
             onChange={this.setOddsAgainst}
+            value={oddsAgainst}
+            errorText={oddsAgainstError}
           />
           <TextField
             hintText='Total staked value (in Wei).'
-            floatingLabelText='Total value you are willing to stake'
+            floatingLabelText='Total value you are willing to stake(in Wei)'
             type='number'
             onChange={this.setTotalStakedValue}
+            value={amountToStake}
+            errorText={amountToStakeError}
           />
-          <RaisedButton label='Create Position' onClick={this.submitCreateQuestionRequest}/>
+          <RaisedButton label='Create Position' onClick={() => this.submitCreatePositionRequest(allError)}/>
         </div><br />
       </div>
     )
