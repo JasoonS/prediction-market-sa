@@ -7,6 +7,7 @@ contract PredictionMarket {
 
     event LogQuestionAdded(string questionStatement, bytes32 indexed questionId, uint inFavour, uint against, uint timeOfBetClose, uint resolutionDeadlineTime, uint winningsClaimDeadline, address trustedSource);
     event LogPositionCreated(address indexed createdBy, bytes32 indexed questionId, uint totalInFavour, uint totalAgainst, uint positionInFavour, uint positionAgainst);
+    event LogQuestionResolved(bytes32 indexed questionId, bool result, string questionStatement, uint totalInFavour, uint totalAgainst);
     event LogClaim(address indexed recipient, bytes32 indexed questionId, uint inFavour, uint against);
     //Todo - use safemath
 
@@ -186,6 +187,8 @@ contract PredictionMarket {
     {
         questions[questionId].resolved = true;
         questions[questionId].result = result;
+
+        LogQuestionResolved(questionId, result, questions[questionId].questionStatement, questions[questionId].inFavour, questions[questionId].against);
 
         return true;
     }

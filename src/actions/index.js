@@ -8,7 +8,8 @@ export const actions = {
   ADD_QUESTION_COMPLETE: 'ADD_QUESTION_COMPLETE', // TODO:: unimplemented in reducer, add later for better UX.
   SAVE_ADMIN: 'SAVE_ADMIN',
   NEW_QUESTION_ADDED: 'NEW_QUESTION_ADDED',
-  UPDATE_POSITIONS: 'UPDATE_POSITIONS'
+  UPDATE_POSITIONS: 'UPDATE_POSITIONS',
+  RESOLVE_QUESTION: 'RESOLVE_QUESTION'
 }
 
 //TODO:: Set better gas limits on these functions so I don't wait peoples money in failing transactions.
@@ -161,3 +162,8 @@ export const closeBet = (predictionMarketInstance, accounts, questionId, result)
     })
   }
 }
+
+export const resolveQuestion = questionObject => ({
+  type: actions.RESOLVE_QUESTION,
+  questionObject
+})

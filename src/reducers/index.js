@@ -71,8 +71,8 @@ const reducer = (state = initialState, action) => {
         winningsClaimDeadline: action.questionObject.winningsClaimDeadline,
         trustedSource: action.questionObject.trustedSource,
         moneyInPot: action.questionObject.inFavour + action.questionObject.against,
-        // userInFavour: (state.user.isAdmin? action.questionObject.inFavour : 0),
-        // userAgainst: (state.user.isAdmin? action.questionObject.against : 0),
+        userInFavour: (state.user.isAdmin? action.questionObject.inFavour : 0),
+        userAgainst: (state.user.isAdmin? action.questionObject.against : 0),
         result: false,
         resolved: false
       }
@@ -103,6 +103,21 @@ const reducer = (state = initialState, action) => {
         questionDictionary : {
           ...state.questionDictionary,
           [action.positionObject.questionId] : questionDetails
+        }
+      }
+    case actions.RESOLVE_QUESTION:
+      // TODO:: Check that the question is already in `questionArray`, shouldn't ever happen, so not too important.
+      const resolvedQuestionDetails = {
+        ...state.questionDictionary[action.questionObject.questionId],
+        result: action.questionObject.result,
+        resolved: true
+      }
+
+      return {
+        ...state,
+        questionDictionary : {
+          ...state.questionDictionary,
+          [action.questionObject.questionId] : resolvedQuestionDetails
         }
       }
     default:
