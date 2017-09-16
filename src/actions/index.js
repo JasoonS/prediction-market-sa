@@ -3,6 +3,7 @@ import getTransactionReceiptMined from '../../utils/getTransactionReceiptMined'
 export const actions = {
   SAVE_QUESTION_ARRAY: 'SAVE_QUESTION_ARRAY',
   SAVE_QUESTION_DETAILS: 'SAVE_QUESTION_DETAILS',
+  SAVE_USERS_POSITION: 'SAVE_USERS_POSITION',
   ADD_QUESTION_PENDING: 'ADD_QUESTION_PENDING', // TODO:: unimplemented in reducer, add later for better UX.
   ADD_QUESTION_COMPLETE: 'ADD_QUESTION_COMPLETE', // TODO:: unimplemented in reducer, add later for better UX.
   SAVE_ADMIN: 'SAVE_ADMIN',
@@ -14,7 +15,7 @@ export const actions = {
 
 //TODO:: Add a function that easily curries all of these actions to include `(predictionMarketInstance, accounts)`.
 
-export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
+export const loadQuestionInfoById = (predictionMarketInstance, questionId, userAddress) => {
   return dispatch => {
     predictionMarketInstance.questions(questionId).then((questionDetailsArray) => {
       const questionDetails = {
@@ -33,7 +34,9 @@ export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
         userAgainst: 0
         // TODO:: add more relevant question details.
       }
-      // TODO:: Add a call here that gets and sets the users possition in state for this question.
+
+      dispatch(loadUserQuestionPosition(predictionMarketInstance, questionId, userAddress))
+
       dispatch({
         type: actions.SAVE_QUESTION_DETAILS,
         questionId,
@@ -43,14 +46,27 @@ export const loadQuestionInfoById = (predictionMarketInstance, questionId) => {
   }
 }
 
-export const loadQuestionArray = (predictionMarketInstance) => {
+export const loadQuestionArray = (predictionMarketInstance, accounts) => {
   return dispatch => {
     predictionMarketInstance.getQuestionList().then((questionList) => {
       dispatch({
         type: actions.SAVE_QUESTION_ARRAY,
         questionList
       })
-      questionList.map(questionId => dispatch(loadQuestionInfoById(predictionMarketInstance, questionId)))
+      questionList.map(questionId => dispatch(loadQuestionInfoById(predictionMarketInstance, questionId, accounts[0])))
+    })
+  }
+}
+
+export const loadUserQuestionPosition = (predictionMarketInstance, questionId, user) => {
+  return dispatch => {
+    predictionMarketInstance.getPosition(questionId, user).then((result) => {
+      dispatch({
+        type: actions.SAVE_USERS_POSITION,
+        questionId,
+        userInFavour: result[0],
+        userAgainst: result[1]
+      })
     })
   }
 }
@@ -102,10 +118,10 @@ export const addQuestion = (
 }
 
 // this is currently very simple, since only admin exists, could have more complexity when different user roles emerge
-export const newQuestionAdded = (predictionMarketInstance, questionObject) => {{
+export const newQuestionAdded = questionObject => ({
   type: actions.NEW_QUESTION_ADDED,
   questionObject
-}}
+})
 
 export const createPosition = (predictionMarketInstance, accounts, questionId, amountFor, amountAgainst) => {
   const totalStake = amountFor + amountAgainst
@@ -125,9 +141,9 @@ export const createPosition = (predictionMarketInstance, accounts, questionId, a
   }
 }
 
-export const updateQuestionPossitions = (predictionMarketInstance, positionObject) => ({
-    type: actions.UPDATE_POSITIONS,
-    positionObject
+export const updateQuestionPossitions = positionObject => ({
+  type: actions.UPDATE_POSITIONS,
+  positionObject
 })
 
 export const closeBet = (predictionMarketInstance, accounts, questionId, result) => {

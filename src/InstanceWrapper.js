@@ -30,12 +30,12 @@ class InstanceWrapper extends Component {
       // set up listeners on the contract.
       result.predictionMarketInstance.LogQuestionAdded().watch ( (err, response) => {
         console.log('EVENT LOG(LogQuestionAdded):', response.args)
-        this.props.dispatch(newQuestionAdded(result.predictionMarketInstance, response.args))
+        this.props.dispatch(newQuestionAdded(response.args))
       })
 
       result.predictionMarketInstance.LogPositionCreated().watch ((err, response) => {
         console.log('EVENT LOG(LogPositionCreated):', response.args)
-        this.props.dispatch(updateQuestionPossitions(result.predictionMarketInstance, response.args))
+        this.props.dispatch(updateQuestionPossitions(response.args))
       })
     })
   }
