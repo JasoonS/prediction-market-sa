@@ -29,8 +29,8 @@ contract('PredicationMarket', account => {
       args = tx.logs[0].args
       assert.equal(args.questionStatement,                 defaultQuestionParams.question,               "Event log did not match")
       assert.equal(args.questionId,                        questionHash,                                 "Parameter did not match")
-      assert.equal(args.inFavour.toString(),               defaultQuestionParams.initialPosition[0],     "Event log did not match")
-      assert.equal(args.against.toString(),                defaultQuestionParams.initialPosition[1],     "Event log did not match")
+      assert.deepEqual(args.inFavour,                      defaultQuestionParams.initialPosition[0],     "Event log did not match")
+      assert.deepEqual(args.against,                       defaultQuestionParams.initialPosition[1],     "Event log did not match")
       assert.equal(args.timeOfBetClose.toString(),         defaultQuestionParams.timeOfBetClose,         "Event log did not match")
       assert.equal(args.resolutionDeadlineTime.toString(), resolutionDeadlineTime,                       "Event log did not match")
       assert.equal(args.winningsClaimDeadline.toString(),  winningsClaimDeadline,                        "Event log did not match")
@@ -39,8 +39,8 @@ contract('PredicationMarket', account => {
       let q = await instance.questions(questionHash)
 
       assert.equal(q[0], defaultQuestionParams.question,               "Event log did not match")
-      assert.equal(q[1], defaultQuestionParams.initialPosition[0],     "Event log did not match")
-      assert.equal(q[2], defaultQuestionParams.initialPosition[1],     "Event log did not match")
+      assert.deepEqual(q[1], defaultQuestionParams.initialPosition[0], "Event log did not match")
+      assert.deepEqual(q[2], defaultQuestionParams.initialPosition[1], "Event log did not match")
       assert.equal(q[3], defaultQuestionParams.timeOfBetClose,         "Event log did not match")
       assert.equal(q[4], resolutionDeadlineTime,                       "Event log did not match")
       assert.equal(q[5], winningsClaimDeadline,                        "Event did did not match")

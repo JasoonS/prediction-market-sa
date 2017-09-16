@@ -21,21 +21,22 @@ contract('PredictionMarket', account => {
 		await addQuestion(defaultQuestionParams)
 
       questionHash = "0x"+keccak(defaultQuestionParams.question)
-		position = [2, 3]
+		position = [web3.toBigNumber(web3.toWei(2, 'ether')), 
+	       			web3.toBigNumber(web3.toWei(3, 'ether'))]
 
 		tx = await instance.createPosition(questionHash, position,
-			{from: acc.nonadmin, value: web3.toWei(1, 'ether'), gas: 3000000})
+			{from: acc.nonadmin, value: web3.toWei(6, 'ether'), gas: 3000000})
 
- 		totalInFavour = defaultQuestionParams.initialPosition[0] + position[0]
- 		totalAgainst = defaultQuestionParams.initialPosition[1] + position[1]
+ 		totalInFavour = defaultQuestionParams.initialPosition[0].plus(position[0])
+ 		totalAgainst = defaultQuestionParams.initialPosition[1].plus(position[1])
 
 		// Check that the event logged is correct
       args = tx.logs[0].args
-		assert.equal(args.createdBy, 		   acc.nonadmin,  "Event log did not match")
-		assert.equal(args.totalInFavour, 	totalInFavour, "Event log did not match")
-		assert.equal(args.totalAgainst,     totalAgainst,  "Event log did not match")
-		assert.equal(args.positionInFavour, position[0],   "Event log did not match")
-		assert.equal(args.positionAgainst,  position[1],   "Event log did not match")
+		assert.equal(args.createdBy, 		   	 acc.nonadmin,  "Event log did not match")
+		assert.deepEqual(args.totalInFavour, 	 totalInFavour, "Event log did not match")
+		assert.deepEqual(args.totalAgainst,     totalAgainst,  "Event log did not match")
+		assert.deepEqual(args.positionInFavour, position[0],   "Event log did not match")
+		assert.deepEqual(args.positionAgainst,  position[1],   "Event log did not match")
 
 		// Check that the position has been stored
 		instance.getPosition(questionHash, acc.nonadmin)
@@ -75,7 +76,8 @@ contract('PredictionMarket', account => {
 		await waitUntilBlock(0, defaultQuestionParams.timeOfBetClose)
 	
       questionHash = "0x"+keccak(defaultQuestionParams.question)
-		position = [2, 3]
+		position = [web3.toBigNumber(web3.toWei(2, 'ether')), 
+	       			web3.toBigNumber(web3.toWei(3, 'ether'))]
 		result = true // no preference on the outcome
 
 		await instance.closeBet(questionHash, result, {from: acc.admin, gas: 3000000})
