@@ -107,6 +107,11 @@ export const newQuestionAdded = (predictionMarketInstance, questionObject) => {
 
 export const createPosition = (predictionMarketInstance, accounts, questionId, amountFor, amountAgainst) => {
   const totalStake = amountFor + amountAgainst
+  console.log(
+    questionId,
+    [amountFor, amountAgainst],
+    {from: accounts[0], value: totalStake, gas: 3000000}
+  )
   return dispatch => {
     predictionMarketInstance.createPosition(
       questionId,

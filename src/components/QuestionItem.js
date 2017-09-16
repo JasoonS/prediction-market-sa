@@ -58,7 +58,7 @@ export default class QuestionItem extends React.Component {
           showExpandableButton={true}
         />
         <CardText expandable={true}>
-          {openOnly(<AddPosition/>)}
+          {openOnly(<AddPosition questionId={questionId} />)}
           {unresolvedOnly(<ResolveQuestion questionId={questionId} trustedSource={trustedSource}/>)}
           {resolvedOnly(<QuestionResult result={result} resolutionDeadlineTime={resolutionDeadlineTime}/>)}
           {withdrawlOnly(<Withdraw result={result} winningsClaimDeadline={winningsClaimDeadline}/>)}
