@@ -42,7 +42,7 @@ contract PredictionMarket {
     }
 
     modifier betIsUnresolved(bytes32 questionId) {
-        require(block.number < questions[questionId].timeOfBetClose);
+        require(questions[questionId].resolved == false);
         _;
     }
 
@@ -129,6 +129,7 @@ contract PredictionMarket {
         betStillOpen(questionId)
         returns (bool)
     {
+        return;
         questions[questionId].inFavour += initialPosition[0];
         questions[questionId].against += initialPosition[1];
 
